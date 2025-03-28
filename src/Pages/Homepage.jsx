@@ -1,10 +1,5 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { Avatar } from "../components/Avatar";
-import { Button } from "../components/Button";
-import { Badge } from "../components/Badge";
-import { Card } from "../components/Card";
-import { TestimonialCard } from "../components/TestimonialCard";
 import { ArrowRight } from "lucide-react";
 import {
   SignedIn,
@@ -13,47 +8,50 @@ import {
   SignUpButton,
 } from "@clerk/clerk-react";
 import FloatingChat from "../components/FloatingChat";
+// import Avatar from "../components/Avatar";
+import {Button} from "../components/Button";
+import {Card} from "../components/Card";
+import {TestimonialCard} from "../components/TestimonialCard";
+import {Badge} from "../components/Badge";
 
-// Combined features array with navigation paths
 const features = [
   {
-    title: "Legal Empowerment",
-    description: "Know your rights, fight for justice",
-    icon: "⚖",
-    path: "/legal-empowerment",
+    title: 'JobFindings',
+    description: 'Discover job opportunities tailored to your skills and interests.',
+    icon: '🔍', // Magnifying glass for job searching
+    path: '/jobfindings',
   },
   {
-    title: "Health & Wellness",
-    description: "Complete health guidance and support",
-    icon: "❤",
-    path: "/health-wellness",
+    title: 'Resource',
+    description: 'Access a wealth of medical and general resources to support your personal and professional growth.',
+    icon: '🌐', // Globe for general resources
+    path: '/resource',
   },
   {
-    title: "Education Hub",
-    description: "Scholarships and learning resources",
-    icon: "🎓",
-    path: "/education-hub",
+    title: 'Health',
+    description: 'Find information and support for your physical and mental well-being.',
+    icon: '🏥', // Hospital for health services
+    path: '/health',
   },
   {
-    title: "Career Growth",
-    description: "Job opportunities and mentorship",
-    icon: "💼",
-    path: "/career-growth",
+    title: 'Education-hub',
+    description: 'Explore educational resources and courses to enhance your knowledge.',
+    icon: '🎓', // Graduation cap for education
+    path: '/education',
   },
   {
-    title: "Community Support",
-    description: "Connect with fellow warriors",
-    icon: "👭",
-    path: "/community-support",
+    title: 'Community Support',
+    description: 'Connect with others and find support within your community.',
+    icon: '🤝', // Handshake for community support
+    path: '/community-support',
   },
   {
-    title: "Financial Freedom",
-    description: "Investment and budgeting guides",
-    icon: "💰",
-    path: "/financial-freedom",
+    title: 'Financial Freedom',
+    description: 'Learn strategies for managing your finances and achieving financial independence.',
+    icon: '💰', // Money bag for financial success
+    path: '/financial-freedom',
   },
 ];
-
 const testimonials = [
   {
     quote:
@@ -81,9 +79,7 @@ const testimonials = [
 export default function HomePage() {
   const navigate = useNavigate();
 
-  const handleNavigation = (path) => {
-    navigate(path);
-  };
+  const handleNavigation = (path) => navigate(path);
 
   return (
     <main className="flex min-h-screen flex-col">
@@ -104,7 +100,7 @@ export default function HomePage() {
                 <SignUpButton mode="modal">
                   <Button
                     size="lg"
-                    className="bg-white text-purple-700 hover:bg-white/90"
+                    className="bg-white text-purple-600 hover:bg-purple-50 shadow-lg hover:shadow-xl transition-all"
                   >
                     Join Now
                   </Button>
@@ -113,7 +109,7 @@ export default function HomePage() {
               <SignedIn>
                 <Button
                   size="lg"
-                  className="bg-white text-purple-700 hover:bg-white/90"
+                  className="bg-white text-purple-700 hover:bg-purple-50 shadow-lg hover:shadow-xl transition-all"
                   asChild
                 >
                   <a href="/dashboard">Go to Dashboard</a>
@@ -122,10 +118,9 @@ export default function HomePage() {
               <Button
                 size="lg"
                 variant="outline"
-                className="text-white border-white hover:bg-white/10"
-                asChild
+                className="text-white border-2 border-white/80 hover:border-white hover:bg-white/20 backdrop-blur-sm"
               >
-                <a href="#features">Learn More</a>
+                Learn More
               </Button>
             </div>
           </div>
@@ -154,7 +149,7 @@ export default function HomePage() {
             {features.map((feature) => (
               <Card
                 key={feature.title}
-                className="hover:shadow-lg transition-shadow duration-200 p-6"
+                className="hover:shadow-lg transition-shadow duration-200 p-6 bg-white"
               >
                 <div className="flex flex-col h-full">
                   <div className="mb-4 text-4xl">{feature.icon}</div>
@@ -167,11 +162,11 @@ export default function HomePage() {
                   <div className="mt-auto">
                     <Button
                       variant="link"
-                      className="text-purple-600 p-0 hover:text-purple-700"
+                      className="text-purple-600 p-0 hover:text-purple-700 group"
                       onClick={() => handleNavigation(feature.path)}
                     >
-                      Learn More{" "}
-                      <ArrowRight className="ml-2 h-4 w-4" />
+                      Learn More
+                      <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                     </Button>
                   </div>
                 </div>
@@ -181,34 +176,83 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Testimonials Section */}
       <section className="py-20 bg-purple-50">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <Badge className="mb-4 bg-purple-100 text-purple-800 hover:bg-purple-100">
-              Success Stories
-            </Badge>
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Hear from Our Community
-            </h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              Real stories from women whose lives have been positively impacted
-              by Astitva.
+  <div className="container mx-auto px-4">
+    <div className="text-center mb-16">
+      <Badge className="mb-4 bg-purple-100 text-purple-800 hover:bg-purple-100">
+        Success Stories
+      </Badge>
+      <h2 className="text-3xl md:text-4xl font-bold mb-4 text-purple-900">
+        Voices of Empowerment
+      </h2>
+      <p className="text-gray-700 max-w-2xl mx-auto text-lg">
+        Discover how women are transforming their lives through our community
+      </p>
+    </div>
+
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 px-4">
+      {testimonials.map((testimonial, index) => (
+        <div 
+          key={index}
+          className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 p-6"
+        >
+          <div className="flex flex-col h-full">
+            {/* Quote Icon */}
+            <div className="mb-4 text-purple-600">
+              <svg 
+                className="w-8 h-8" 
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round" 
+                  strokeWidth="2" 
+                  d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                />
+              </svg>
+            </div>
+
+            {/* Testimonial Text */}
+            <p className="text-gray-700 mb-6 flex-1 italic">
+              "{testimonial.quote}"
             </p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {testimonials.map((testimonial, index) => (
-              <TestimonialCard
-                key={index}
-                quote={testimonial.quote}
-                name={testimonial.name}
-                role={testimonial.role}
-                avatar={testimonial.avatar}
-              />
-            ))}
+
+            {/* Author Info */}
+            <div className="flex items-center gap-4 border-t border-purple-100 pt-4">
+              <div className="flex-shrink-0">
+                <img 
+                  src={testimonial.avatar}
+                  alt={testimonial.name}
+                  className="w-12 h-12 rounded-full object-cover border-2 border-purple-200"
+                />
+              </div>
+              <div className="text-left">
+                <h4 className="font-semibold text-purple-900">
+                  {testimonial.name}
+                </h4>
+                <p className="text-sm text-purple-600">
+                  {testimonial.role}
+                </p>
+              </div>
+            </div>
           </div>
         </div>
-      </section>
+      ))}
+    </div>
+
+    {/* View More Button */}
+    <div className="mt-12 text-center">
+      <Button
+        variant="outline"
+        className="text-purple-700 border-purple-300 hover:bg-purple-50"
+      >
+        View More Stories
+      </Button>
+    </div>
+  </div>
+</section>
 
       {/* CTA Section */}
       <section className="py-20 bg-gradient-to-r from-purple-700 to-indigo-800 text-white">
@@ -225,7 +269,7 @@ export default function HomePage() {
               <SignUpButton mode="modal">
                 <Button
                   size="lg"
-                  className="bg-white text-purple-700 hover:bg-white/90"
+                  className="bg-white text-purple-700 hover:bg-purple-50 shadow-lg hover:shadow-xl transition-all"
                 >
                   Get Started
                 </Button>
@@ -234,7 +278,7 @@ export default function HomePage() {
             <SignedIn>
               <Button
                 size="lg"
-                className="bg-white text-purple-700 hover:bg-white/90"
+                className="bg-white text-purple-700 hover:bg-purple-50 shadow-lg hover:shadow-xl transition-all"
                 asChild
               >
                 <a href="/dashboard">Go to Dashboard</a>
@@ -243,16 +287,14 @@ export default function HomePage() {
             <Button
               size="lg"
               variant="outline"
-              className="text-white border-white hover:bg-white/10"
-              asChild
+              className="text-white border-2 border-white/80 hover:border-white hover:bg-white/20 backdrop-blur-sm"
             >
-              <a href="#features">Learn More</a>
+              Learn More
             </Button>
           </div>
         </div>
       </section>
 
-      {/* Floating Chat Button */}
       <FloatingChat />
     </main>
   );

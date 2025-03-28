@@ -1,11 +1,13 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { SignedIn, SignedOut, SignIn, SignUp } from '@clerk/clerk-react';
-import HomePage from './Pages/Homepage'
+import HomePage from './Pages/Homepage';
 import JobFindings from './pages/JobFinding';
+import ResourceFinder from './Pages/ResourceFinder';  // Import Resource Finder
 import DashboardPage from './Pages/DashboardPage';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
+import Health from './Pages/Health';
 import UserProfile from './components/UserProfile';
 import './App.css';
 
@@ -26,6 +28,7 @@ function App() {
           {/* Public Routes */}
           <Route path="/" element={<HomePage />} />
           <Route path="/jobfindings" element={<JobFindings />} />
+          <Route path="/resource-finder" element={<ResourceFinder />} /> {/* ✅ Resource Finder Route */}
 
           {/* Authentication Routes */}
           <Route
@@ -36,15 +39,7 @@ function App() {
                   <Navigate to="/dashboard" replace />
                 </SignedIn>
                 <SignedOut>
-                  <SignIn
-                    routing="path"
-                    path="/sign-in"
-                    appearance={{
-                      elements: {
-                        formButtonPrimary: 'bg-blue-600 hover:bg-blue-700',
-                      },
-                    }}
-                  />
+                  <SignIn routing="path" path="/sign-in" />
                 </SignedOut>
               </>
             }
@@ -57,15 +52,7 @@ function App() {
                   <Navigate to="/dashboard" replace />
                 </SignedIn>
                 <SignedOut>
-                  <SignUp
-                    routing="path"
-                    path="/sign-up"
-                    appearance={{
-                      elements: {
-                        formButtonPrimary: 'bg-blue-600 hover:bg-blue-700',
-                      },
-                    }}
-                  />
+                  <SignUp routing="path" path="/sign-up" />
                 </SignedOut>
               </>
             }
@@ -75,14 +62,16 @@ function App() {
           <Route
             path="/dashboard"
             element={
-              <>
-                <SignedIn>
-                  <DashboardPage />
-                </SignedIn>
-                <SignedOut>
-                  <Navigate to="/sign-in" replace />
-                </SignedOut>
-              </>
+              <SignedIn>
+                <DashboardPage />
+              </SignedIn>
+            }
+          />
+
+          <Route
+            path="/health"
+            element={
+              <Health />
             }
           />
 
