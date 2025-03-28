@@ -1,47 +1,80 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Button } from '../components/Button';
-import { Badge } from '../components/Badge';
-import { Card } from '../components/Card';
-import { ArrowRight } from 'lucide-react';
-import FloatingChat from '../components/FloatingChat';
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import { Avatar } from "../components/Avatar";
+import { Button } from "../components/Button";
+import { Badge } from "../components/Badge";
+import { Card } from "../components/Card";
+import { TestimonialCard } from "../components/TestimonialCard";
+import { ArrowRight } from "lucide-react";
+import {
+  SignedIn,
+  SignedOut,
+  SignInButton,
+  SignUpButton,
+} from "@clerk/clerk-react";
+import FloatingChat from "../components/FloatingChat";
 
+// Combined features array with navigation paths
 const features = [
   {
-    title: 'JobFindings',
-    description: 'Know your rights, fight for justice',
-    icon: '⚖',
-    path: '/jobfindings',
+    title: "Legal Empowerment",
+    description: "Know your rights, fight for justice",
+    icon: "⚖",
+    path: "/legal-empowerment",
   },
   {
-    title: 'Health & Wellness',
-    description: 'Complete health guidance and support',
-    icon: '❤',
-    path: '/health-wellness',
+    title: "Health & Wellness",
+    description: "Complete health guidance and support",
+    icon: "❤",
+    path: "/health-wellness",
   },
   {
-    title: 'Education Hub',
-    description: 'Scholarships and learning resources',
-    icon: '🎓',
-    path: '/education-hub',
+    title: "Education Hub",
+    description: "Scholarships and learning resources",
+    icon: "🎓",
+    path: "/education-hub",
   },
   {
-    title: 'Career Growth',
-    description: 'Job opportunities and mentorship',
-    icon: '💼',
-    path: '/career-growth',
+    title: "Career Growth",
+    description: "Job opportunities and mentorship",
+    icon: "💼",
+    path: "/career-growth",
   },
   {
-    title: 'Community Support',
-    description: 'Connect with fellow warriors',
-    icon: '👭',
-    path: '/community-support',
+    title: "Community Support",
+    description: "Connect with fellow warriors",
+    icon: "👭",
+    path: "/community-support",
   },
   {
-    title: 'Financial Freedom',
-    description: 'Investment and budgeting guides',
-    icon: '💰',
-    path: '/financial-freedom',
+    title: "Financial Freedom",
+    description: "Investment and budgeting guides",
+    icon: "💰",
+    path: "/financial-freedom",
+  },
+];
+
+const testimonials = [
+  {
+    quote:
+      "Astitva helped me find a job after a 5-year career break. The supportive community and resources were exactly what I needed to rebuild my confidence.",
+    name: "Priya Sharma",
+    role: "Software Developer",
+    avatar: "/placeholder.svg?height=100&width=100",
+  },
+  {
+    quote:
+      "The health tracking features have been life-changing. I finally understand my body better and have been able to address health issues I didn't even know I had.",
+    name: "Aisha Khan",
+    role: "Healthcare Worker",
+    avatar: "/placeholder.svg?height=100&width=100",
+  },
+  {
+    quote:
+      "Through SheFund, I was able to secure funding for my small business. The platform made it easy to share my story and connect with supporters.",
+    name: "Meera Patel",
+    role: "Entrepreneur",
+    avatar: "/placeholder.svg?height=100&width=100",
   },
 ];
 
@@ -55,21 +88,44 @@ export default function HomePage() {
   return (
     <main className="flex min-h-screen flex-col">
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-r from-purple-700 via-purple-600 to-indigo-700 py-20 md:py-32">
+      <section className="relative bg-gradient-to-r from-purple-700 via-purple-600 to-indigo-800 py-20 md:py-32">
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-3xl">
             <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
               Empowering Women Through Community & Resources
             </h1>
             <p className="text-xl text-white/90 mb-8">
-              Join Astitva to connect with a supportive community, find opportunities, track your health, and access resources designed for women of all backgrounds.
+              Join Astitva to connect with a supportive community, find
+              opportunities, track your health, and access resources designed
+              for women of all backgrounds.
             </p>
             <div className="flex flex-wrap gap-4">
-              <Button size="lg" variant="outline" className="text-white border-white hover:bg-white/10">
-                Join Now
-              </Button>
-              <Button size="lg" variant="outline" className="text-white border-white hover:bg-white/10">
-                Learn More
+              <SignedOut>
+                <SignUpButton mode="modal">
+                  <Button
+                    size="lg"
+                    className="bg-white text-purple-700 hover:bg-white/90"
+                  >
+                    Join Now
+                  </Button>
+                </SignUpButton>
+              </SignedOut>
+              <SignedIn>
+                <Button
+                  size="lg"
+                  className="bg-white text-purple-700 hover:bg-white/90"
+                  asChild
+                >
+                  <a href="/dashboard">Go to Dashboard</a>
+                </Button>
+              </SignedIn>
+              <Button
+                size="lg"
+                variant="outline"
+                className="text-white border-white hover:bg-white/10"
+                asChild
+              >
+                <a href="#features">Learn More</a>
               </Button>
             </div>
           </div>
@@ -80,30 +136,41 @@ export default function HomePage() {
       </section>
 
       {/* Features Section */}
-      <section className="py-20 bg-gray-50">
+      <section id="features" className="py-20 bg-gray-50">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <Badge className="mb-4 bg-purple-100 text-purple-800 hover:bg-purple-100">Our Platform</Badge>
-            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-purple-600">Everything You Need in One Place</h2>
+            <Badge className="mb-4 bg-purple-100 text-purple-800 hover:bg-purple-100">
+              Our Platform
+            </Badge>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-purple-600">
+              Everything You Need in One Place
+            </h2>
             <p className="text-gray-600 max-w-2xl mx-auto">
-              Astitva provides a comprehensive set of tools and resources designed specifically for women's empowerment and well-being.
+              Astitva provides a comprehensive set of tools and resources
+              designed specifically for women's empowerment and well-being.
             </p>
           </div>
-
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {features.map((feature) => (
-              <Card key={feature.title} className="hover:shadow-lg transition-shadow duration-200 p-6">
+              <Card
+                key={feature.title}
+                className="hover:shadow-lg transition-shadow duration-200 p-6"
+              >
                 <div className="flex flex-col h-full">
                   <div className="mb-4 text-4xl">{feature.icon}</div>
-                  <h3 className="text-xl font-semibold mb-2 text-gray-400">{feature.title}</h3>
-                  <p className="text-gray-600 mb-4 flex-1">{feature.description}</p>
+                  <h3 className="text-xl font-semibold mb-2 text-gray-400">
+                    {feature.title}
+                  </h3>
+                  <p className="text-gray-600 mb-4 flex-1">
+                    {feature.description}
+                  </p>
                   <div className="mt-auto">
                     <Button
                       variant="link"
                       className="text-purple-600 p-0 hover:text-purple-700"
                       onClick={() => handleNavigation(feature.path)}
                     >
-                      Learn More
+                      Learn More{" "}
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
                   </div>
@@ -114,28 +181,78 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Testimonials */}
+      {/* Testimonials Section */}
       <section className="py-20 bg-purple-50">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <Badge className="mb-4 bg-purple-100 text-purple-800 hover:bg-purple-100">Success Stories</Badge>
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Hear from Our Community</h2>
-            <p className=" max-w-2xl mx-auto">
-              Real stories from women whose lives have been positively impacted by Astitva.
+            <Badge className="mb-4 bg-purple-100 text-purple-800 hover:bg-purple-100">
+              Success Stories
+            </Badge>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+              Hear from Our Community
+            </h2>
+            <p className="text-gray-600 max-w-2xl mx-auto">
+              Real stories from women whose lives have been positively impacted
+              by Astitva.
             </p>
           </div>
-
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* Testimonial cards */}
+            {testimonials.map((testimonial, index) => (
+              <TestimonialCard
+                key={index}
+                quote={testimonial.quote}
+                name={testimonial.name}
+                role={testimonial.role}
+                avatar={testimonial.avatar}
+              />
+            ))}
           </div>
         </div>
       </section>
 
       {/* CTA Section */}
       <section className="py-20 bg-gradient-to-r from-purple-700 to-indigo-800 text-white">
-        {/* ... same CTA content */}
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-3xl md:text-4xl font-bold mb-6">
+            Ready to Begin Your Journey?
+          </h2>
+          <p className="text-xl mb-8 max-w-2xl mx-auto">
+            Join thousands of women who are already transforming their lives
+            with Astitva.
+          </p>
+          <div className="flex justify-center gap-4">
+            <SignedOut>
+              <SignUpButton mode="modal">
+                <Button
+                  size="lg"
+                  className="bg-white text-purple-700 hover:bg-white/90"
+                >
+                  Get Started
+                </Button>
+              </SignUpButton>
+            </SignedOut>
+            <SignedIn>
+              <Button
+                size="lg"
+                className="bg-white text-purple-700 hover:bg-white/90"
+                asChild
+              >
+                <a href="/dashboard">Go to Dashboard</a>
+              </Button>
+            </SignedIn>
+            <Button
+              size="lg"
+              variant="outline"
+              className="text-white border-white hover:bg-white/10"
+              asChild
+            >
+              <a href="#features">Learn More</a>
+            </Button>
+          </div>
+        </div>
       </section>
 
+      {/* Floating Chat Button */}
       <FloatingChat />
     </main>
   );
