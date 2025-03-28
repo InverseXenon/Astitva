@@ -4,7 +4,8 @@ import { SignedIn, SignedOut, SignIn, SignUp } from '@clerk/clerk-react';
 import HomePage from './Pages/Homepage';
 import JobFindings from './pages/JobFinding';
 import DashboardPage from './Pages/DashboardPage';
-import HealthAnalysis from './components/HealthAnalysis'; // Import the HealthAnalysis component
+import HealthAnalysis from './components/HealthAnalysis';
+import CommunityPage from './Pages/CommunityPage'; // Add this import
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import UserProfile from './components/UserProfile';
@@ -14,20 +15,18 @@ function App() {
   return (
     <Router>
       <div className="app-container">
-        {/* Persistent Navbar */}
         <Navbar />
 
-        {/* User Profile Display for Signed-In Users */}
         <SignedIn>
           <UserProfile />
         </SignedIn>
 
-        {/* Application Routes */}
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<HomePage />} />
           <Route path="/jobfindings" element={<JobFindings />} />
-          <Route path="/health-wellness" element={<HealthAnalysis />} /> {/* New route */}
+          <Route path="/health-wellness" element={<HealthAnalysis />} />
+          <Route path="/community" element={<CommunityPage />} /> {/* New community route */}
 
           {/* Authentication Routes */}
           <Route
@@ -92,7 +91,6 @@ function App() {
           <Route path="*" element={<div className="not-found">404 - Page Not Found</div>} />
         </Routes>
 
-        {/* Persistent Footer */}
         <Footer />
       </div>
     </Router>

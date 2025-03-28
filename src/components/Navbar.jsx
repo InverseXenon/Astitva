@@ -33,7 +33,7 @@ const Navbar = () => {
           <Link to="/jobfindings" className="hover:text-purple-500 transition">Jobs</Link>
           <Link to="/health-wellness" className="hover:text-purple-500 transition">Health</Link>
           <Link to="/resource-finder" className="hover:text-purple-500 transition">Resource Finder</Link>
-          <Link to="/community-support" className="hover:text-purple-500 transition">Community</Link>
+          <Link to="/community" className="hover:text-purple-500 transition">Community</Link>
 
           {/* Dropdown for More Services */}
           <div className="relative" ref={dropdownRef}>
