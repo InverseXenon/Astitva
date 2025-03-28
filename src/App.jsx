@@ -3,11 +3,10 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { SignedIn, SignedOut, SignIn, SignUp } from '@clerk/clerk-react';
 import HomePage from './Pages/Homepage';
 import JobFindings from './pages/JobFinding';
-import ResourceFinder from './Pages/ResourceFinder';  // Import Resource Finder
 import DashboardPage from './Pages/DashboardPage';
+import HealthAnalysis from './components/HealthAnalysis'; // Import the HealthAnalysis component
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
-import Health from './Pages/Health';
 import UserProfile from './components/UserProfile';
 import './App.css';
 
@@ -28,7 +27,7 @@ function App() {
           {/* Public Routes */}
           <Route path="/" element={<HomePage />} />
           <Route path="/jobfindings" element={<JobFindings />} />
-          <Route path="/resource-finder" element={<ResourceFinder />} /> {/* ✅ Resource Finder Route */}
+          <Route path="/health-wellness" element={<HealthAnalysis />} /> {/* New route */}
 
           {/* Authentication Routes */}
           <Route
@@ -39,7 +38,15 @@ function App() {
                   <Navigate to="/dashboard" replace />
                 </SignedIn>
                 <SignedOut>
-                  <SignIn routing="path" path="/sign-in" />
+                  <SignIn
+                    routing="path"
+                    path="/sign-in"
+                    appearance={{
+                      elements: {
+                        formButtonPrimary: 'bg-blue-600 hover:bg-blue-700',
+                      },
+                    }}
+                  />
                 </SignedOut>
               </>
             }
@@ -52,26 +59,32 @@ function App() {
                   <Navigate to="/dashboard" replace />
                 </SignedIn>
                 <SignedOut>
-                  <SignUp routing="path" path="/sign-up" />
+                  <SignUp
+                    routing="path"
+                    path="/sign-up"
+                    appearance={{
+                      elements: {
+                        formButtonPrimary: 'bg-blue-600 hover:bg-blue-700',
+                      },
+                    }}
+                  />
                 </SignedOut>
               </>
             }
           />
 
-          {/* Protected Route */}
+          {/* Protected Routes */}
           <Route
             path="/dashboard"
             element={
-              <SignedIn>
-                <DashboardPage />
-              </SignedIn>
-            }
-          />
-
-          <Route
-            path="/health"
-            element={
-              <Health />
+              <>
+                <SignedIn>
+                  <DashboardPage />
+                </SignedIn>
+                <SignedOut>
+                  <Navigate to="/sign-in" replace />
+                </SignedOut>
+              </>
             }
           />
 

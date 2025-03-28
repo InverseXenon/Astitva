@@ -31,7 +31,7 @@ const features = [
     title: 'Health',
     description: 'Find information and support for your physical and mental well-being.',
     icon: '🏥', // Hospital for health services
-    path: '/health',
+    path: '/health-wellness',
   },
   {
     title: 'Education-hub',
@@ -100,7 +100,7 @@ export default function HomePage() {
                 <SignUpButton mode="modal">
                   <Button
                     size="lg"
-                    className="bg-white text-purple-600 hover:bg-purple-50 shadow-lg hover:shadow-xl transition-all"
+                    className=" text-purple-700 hover:bg-purple-50 shadow-lg hover:shadow-xl transition-all"
                   >
                     Join Now
                   </Button>
@@ -109,7 +109,7 @@ export default function HomePage() {
               <SignedIn>
                 <Button
                   size="lg"
-                  className="bg-white text-purple-700 hover:bg-purple-50 shadow-lg hover:shadow-xl transition-all"
+                  className=" text-purple-700 hover:bg-purple-50 shadow-lg hover:shadow-xl transition-all"
                   asChild
                 >
                   <a href="/dashboard">Go to Dashboard</a>
@@ -242,58 +242,11 @@ export default function HomePage() {
       ))}
     </div>
 
-    {/* View More Button */}
-    <div className="mt-12 text-center">
-      <Button
-        variant="outline"
-        className="text-purple-700 border-purple-300 hover:bg-purple-50"
-      >
-        View More Stories
-      </Button>
-    </div>
+    
   </div>
 </section>
 
-      {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-purple-700 to-indigo-800 text-white">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-6">
-            Ready to Begin Your Journey?
-          </h2>
-          <p className="text-xl mb-8 max-w-2xl mx-auto">
-            Join thousands of women who are already transforming their lives
-            with Astitva.
-          </p>
-          <div className="flex justify-center gap-4">
-            <SignedOut>
-              <SignUpButton mode="modal">
-                <Button
-                  size="lg"
-                  className="bg-white text-purple-700 hover:bg-purple-50 shadow-lg hover:shadow-xl transition-all"
-                >
-                  Get Started
-                </Button>
-              </SignUpButton>
-            </SignedOut>
-            <SignedIn>
-              <Button
-                size="lg"
-                className="bg-white text-purple-700 hover:bg-purple-50 shadow-lg hover:shadow-xl transition-all"
-                asChild
-              >
-                <a href="/dashboard">Go to Dashboard</a>
-              </Button>
-            </SignedIn>
-            <Button
-              size="lg"
-              variant="outline"
-              className="text-white border-2 border-white/80 hover:border-white hover:bg-white/20 backdrop-blur-sm"
-            >
-              Learn More
-            </Button>
-          </div>
-        </div>
-      </section>
+      
 
       <FloatingChat />
     </main>
