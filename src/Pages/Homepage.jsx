@@ -4,6 +4,7 @@ import { Button } from '../components/Button';
 import { Badge } from '../components/Badge';
 import { Card } from '../components/Card';
 import { ArrowRight } from 'lucide-react';
+import FloatingChat from '../components/FloatingChat';
 
 const features = [
   {
@@ -135,7 +136,7 @@ export default function HomePage() {
         {/* ... same CTA content */}
       </section>
 
-      <ChatbotButton   />
+      <FloatingChat />
     </main>
   );
 }
