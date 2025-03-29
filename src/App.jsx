@@ -17,6 +17,7 @@ import UserProfile from "./components/UserProfile";
 import "./App.css";
 import FloatingChat from "./components/FloatingChat";
 import ResourceFinderPage from "./Pages/ResourceFinderPage";
+import Education from './Pages/Education';
 
 function App() {
   return (
@@ -31,6 +32,7 @@ function App() {
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<HomePage />} />
+          <Route path="/education" element={<Education />} />
           
           {/* Authentication Routes */}
           <Route

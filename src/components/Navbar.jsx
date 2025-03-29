@@ -87,7 +87,7 @@ const Navbar = () => {
           <Link to="/health" className="block px-6 py-2 text-purple-700" onClick={() => setMenuOpen(false)}>Health</Link>
           <Link to="/resource-finder" className="block px-6 py-2 text-purple-700" onClick={() => setMenuOpen(false)}>Resource Finder</Link>
           <Link to="/community-support" className="block px-6 py-2 text-purple-700" onClick={() => setMenuOpen(false)}>Community</Link>
-          <Link to="/education-hub" className="block px-6 py-2 text-purple-700" onClick={() => setMenuOpen(false)}>Education Hub</Link>
+          <Link to="/education" className="block px-6 py-2 text-purple-700" onClick={() => setMenuOpen(false)}>Education Hub</Link>
           <Link to="/financial-freedom" className="block px-6 py-2 text-purple-700" onClick={() => setMenuOpen(false)}>Financial Freedom</Link>
           <Link to="/legal-support" className="block px-6 py-2 text-purple-700" onClick={() => setMenuOpen(false)}>Legal Support</Link>
         </div>
