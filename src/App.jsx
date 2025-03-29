@@ -10,6 +10,7 @@ import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import UserProfile from './components/UserProfile';
 import './App.css';
+import FloatingChat from './components/FloatingChat';
 
 function App() {
   return (
@@ -90,7 +91,7 @@ function App() {
           {/* 404 Not Found Route */}
           <Route path="*" element={<div className="not-found">404 - Page Not Found</div>} />
         </Routes>
-
+            <FloatingChat />
         <Footer />
       </div>
     </Router>

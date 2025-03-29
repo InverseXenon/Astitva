@@ -49,7 +49,7 @@ const CommunityPage = () => {
     <div className="min-h-screen bg-gray-50 p-4">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
-        <div className="mb-8 text-center">
+        <div className="mt-8 mb-8 text-center">
           <h1 className="text-3xl font-bold text-gray-800 mb-2">
             <FiShield className="inline mr-2 text-red-500" />
             Astitva Community
@@ -156,9 +156,9 @@ const CommunityPage = () => {
         {/* Create Post Button */}
         <button
           onClick={() => setShowModal(true)}
-          className="fixed bottom-8 right-8 bg-red-500 text-white p-4 rounded-full shadow-lg hover:bg-red-600 transition-colors"
+          className="fixed top-20 right-8 bg-red-500 text-white p-2 rounded-md shadow-lg hover:bg-red-600 transition-colors"
         >
-          <FiPlus size={24} />
+          Create Post
         </button>
 
         {/* Create Post Modal */}
