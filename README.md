@@ -38,18 +38,16 @@ Astitva is a comprehensive digital platform designed to empower women by integra
 - Encrypted communication channels
 - Real-time helpline directory
 
-### 🔎 Resource Finder & Crowdfunding
+### 🔎 Resource Finder 
 - Interactive mapping for shelters, healthcare centers, and supplies
 - Geolocation-based search functionality
-- SheFund - Secure platform for crowdfunding women's causes
 - Support for emergency needs and gender-equality projects
 
 ## 💪 Unique Selling Proposition (USP)
 
 1. **All-in-One Platform**: Combines safety, employment, and health tracking in a single ecosystem
 2. **AI-Powered Chatbot**: Provides instant responses for legal, health, and career queries
-3. **Crowdfunding for Women's Causes**: Supports emergency needs and gender-equality projects
-4. **Secure & Private**: Encrypted reporting and secure communication ensure user safety
+3. **Secure & Private**: Encrypted reporting and secure communication ensure user safety
 
 ## 🔧 Technologies Used
 
@@ -105,9 +103,6 @@ git push origin feature/your-feature-name
 
 
 
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## 🙏 Acknowledgements
 
