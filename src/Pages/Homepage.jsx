@@ -16,6 +16,7 @@ import { Card } from "../components/Card";
 import { Badge } from "../components/Badge";
 import "swiper/css";
 import "swiper/css/autoplay";
+import women from "../../public/women.jpg"
 
 const features = [
   {
@@ -117,51 +118,59 @@ export default function HomePage() {
   return (
     <main className="flex min-h-screen flex-col">
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-r from-purple-700 via-purple-600 to-indigo-800 py-20 md:py-32">
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="max-w-3xl">
-            <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
-              Empowering Women Through Community & Resources
-            </h1>
-            <p className="text-xl text-white/90 mb-8">
-              Join Astitva to connect with a supportive community, find
-              opportunities, track your health, and access resources designed
-              for women of all backgrounds.
-            </p>
-            <div className="flex flex-wrap gap-4">
-              <SignedOut>
-                <SignUpButton mode="modal">
-                  <Button
-                    size="lg"
-                    className="text-purple-700 hover:bg-purple-50 shadow-lg hover:shadow-xl transition-all"
-                  >
-                    Join Now
-                  </Button>
-                </SignUpButton>
-              </SignedOut>
-              <SignedIn>
-                <Button
-                  size="lg"
-                  className="text-purple-700 hover:bg-purple-50 shadow-lg hover:shadow-xl transition-all"
-                  asChild
-                >
-                  <a href="/dashboard">Go to Dashboard</a>
-                </Button>
-              </SignedIn>
-              <Button
-                size="lg"
-                variant="outline"
-                className="text-white border-2 border-white/80 hover:border-white hover:bg-white/20 backdrop-blur-sm"
-              >
-                Learn More
-              </Button>
-            </div>
-          </div>
-        </div>
-        <div className="absolute bottom-0 right-0 w-full md:w-1/2 h-full opacity-10">
-          <div className="w-full h-full bg-[url('/placeholder.svg?height=800&width=800')] bg-no-repeat bg-right-bottom bg-contain"></div>
-        </div>
-      </section>
+<section className="relative bg-gradient-to-r from-purple-700 via-purple-600 to-indigo-800 py-20 md:py-32">
+  <div className="container mx-auto px-4 relative z-10 flex flex-col md:flex-row items-center justify-between">
+    {/* Left Content */}
+    <div className="md:w-1/2">
+      <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
+        Empowering Women Through Community & Resources
+      </h1>
+      <p className="text-xl text-white/90 mb-8">
+        Join Astitva to connect with a supportive community, find
+        opportunities, track your health, and access resources designed
+        for women of all backgrounds.
+      </p>
+      <div className="flex flex-wrap gap-4">
+        <SignedOut>
+          <SignUpButton mode="modal">
+            <Button
+              size="lg"
+              className="text-purple-700 hover:bg-purple-50 shadow-lg hover:shadow-xl transition-all"
+            >
+              Join Now
+            </Button>
+          </SignUpButton>
+        </SignedOut>
+        <SignedIn>
+          <Button
+            size="lg"
+            className="text-purple-700 hover:bg-purple-50 shadow-lg hover:shadow-xl transition-all"
+            asChild
+          >
+            <a href="/dashboard">Go to Dashboard</a>
+          </Button>
+        </SignedIn>
+        <Button
+          size="lg"
+          variant="outline"
+          className="text-white border-2 border-white/80 hover:border-white hover:bg-white/20 backdrop-blur-sm"
+        >
+          Learn More
+        </Button>
+      </div>
+    </div>
+
+    {/* Right Side - Add Image Here */}
+    <div className="h-120 flex justify-center items-center mx-20">
+      <img 
+        src={women} 
+        alt="Empowered Woman" 
+        className="w-full h-full object-contain rounded-lg shadow-lg"
+      />
+    </div>
+  </div>
+</section>
+
 
       {/* Features Section */}
       <section id="features" className="py-20 bg-gray-50">

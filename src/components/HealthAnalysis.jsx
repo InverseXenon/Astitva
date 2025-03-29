@@ -324,7 +324,7 @@ const HealthAnalysis = () => {
         <span className="hidden sm:inline">Emergency SOS</span>
       </button>
 
-      <div className="max-w-7xl mx-auto space-y-8">
+      <div className="mt-8 max-w-7xl mx-auto space-y-8">
         <header className="text-center mb-8">
           <h1 className="text-3xl font-bold text-purple-600 flex items-center justify-center gap-2">
             <Venus size={32} /> Astitva Health Companion
