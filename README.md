@@ -103,11 +103,7 @@ git commit -m "Add feature: description"
 git push origin feature/your-feature-name
 ```
 
-## 📞 Contact
 
-- Email: team@astitva.org
-- Twitter: [@AstitvaOrg](https://twitter.com/AstitvaOrg)
-- LinkedIn: [Astitva Organization](https://linkedin.com/company/astitva)
 
 ## 📄 License
 
