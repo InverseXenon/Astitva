@@ -9,8 +9,14 @@ import {
   FaShieldAlt, 
   FaMedkit, 
   FaSyncAlt, 
-  FaSatellite 
+  FaSatellite,
+  FaWalking,
+  FaCar,
+  FaDirections,
+  FaClock,
+  FaInfoCircle
 } from 'react-icons/fa';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const createCustomIcon = (color) => {
   return new L.Icon({
@@ -37,6 +43,8 @@ export default function ResourceMap() {
   const [accuracy, setAccuracy] = useState(null);
   const [loading, setLoading] = useState(true);
   const [satelliteView, setSatelliteView] = useState(false);
+  const [activeFilter, setActiveFilter] = useState('all');
+  const [showLegend, setShowLegend] = useState(true);
   const watchId = useRef(null);
   const mapRef = useRef(null);
 
@@ -72,22 +80,28 @@ export default function ResourceMap() {
 
   const fetchNearestLocations = async (lat, lng) => {
     try {
+      setLoading(true);
       const response = await fetch(
         `https://overpass-api.de/api/interpreter?data=[out:json];
         (
           node[amenity=hospital](around:2000,${lat},${lng});
-          node[amenity=police](around:2000,${lat},${lng});
+          node[amenity~"police|police_station"](around:2000,${lat},${lng});
           node[amenity=pharmacy](around:2000,${lat},${lng});
         );
         out body;>;out skel qt;`
       );
       const data = await response.json();
+      
       const locations = data.elements
         .filter(el => el.tags?.name)
         .map(el => ({
           ...el,
           distance: calculateDistance(lat, lng, el.lat, el.lon),
-          status: getStatus(el.tags.opening_hours)
+          status: getStatus(el.tags.opening_hours),
+          tags: {
+            ...el.tags,
+            amenity: el.tags.amenity === 'police_station' ? 'police' : el.tags.amenity
+          }
         }));
       
       const sortAndSeparate = (amenity) => {
@@ -110,10 +124,12 @@ export default function ResourceMap() {
         police: otherPolice,
         pharmacy: otherPharmacies
       });
+      setLoading(false);
     } catch (error) {
       console.error('Error fetching locations:', error);
       setNearestLocations({ hospital: null, police: null, pharmacy: null });
       setOtherLocations({ hospital: [], police: [], pharmacy: [] });
+      setLoading(false);
     }
   };
 
@@ -123,7 +139,6 @@ export default function ResourceMap() {
       setPosition(newPos);
       setAccuracy(pos.coords.accuracy);
       await fetchNearestLocations(newPos[0], newPos[1]);
-      setLoading(false);
       if (mapRef.current) {
         mapRef.current.flyTo(newPos, 16, { animate: true, duration: 1 });
       }
@@ -134,7 +149,6 @@ export default function ResourceMap() {
         handlePositionUpdate,
         (error) => {
           console.error('Location error:', error);
-          alert('Enable location access for accurate results');
           setLoading(false);
         },
         { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
@@ -171,8 +185,9 @@ export default function ResourceMap() {
     }
   }, [mapRef.current]);
 
-  const handleNavigation = (lat, lng) => {
-    window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`, '_blank');
+  const handleNavigation = (lat, lng, mode = 'drive') => {
+    const travelMode = mode === 'walk' ? 'walking' : 'driving';
+    window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=${travelMode}`, '_blank');
   };
 
   const handleRecenter = () => {
@@ -185,16 +200,95 @@ export default function ResourceMap() {
     setSatelliteView(prev => !prev);
   };
 
+  const toggleLegend = () => {
+    setShowLegend(prev => !prev);
+  };
+
   const defaultIcon = createCustomIcon('grey');
 
-  return (
-    <div className="relative">
-      <div className="h-96 w-full rounded-lg overflow-hidden shadow-lg relative">
-        {loading && (
-          <div className="absolute inset-0 bg-white/80 z-[1000] flex items-center justify-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-600"></div>
+  const shouldShowMarker = (type) => {
+    if (activeFilter === 'all') return true;
+    return activeFilter === type;
+  };
+
+  const PopupContent = ({ location, type }) => {
+    const iconMap = {
+      hospital: <FaHospitalSymbol className="text-blue-500 mr-2 text-xl" />,
+      police: <FaShieldAlt className="text-green-500 mr-2 text-xl" />,
+      pharmacy: <FaMedkit className="text-orange-500 mr-2 text-xl" />
+    };
+    
+    return (
+      <div className="min-w-[240px]">
+        <div className="flex items-center mb-3">
+          {iconMap[type]}
+          <h3 className="font-bold text-lg text-gray-800">{location.tags.name}</h3>
+        </div>
+        
+        <div className="space-y-2 mb-3">
+          <div className="flex items-center text-sm">
+            <FaWalking className="text-gray-500 mr-2" />
+            <span className="text-gray-700">
+              {Math.round(location.distance)}m away
+            </span>
           </div>
-        )}
+          
+          {location.status && (
+            <div className="flex items-center text-sm">
+              <FaClock className="text-gray-500 mr-2" />
+              <span className={`font-medium ${
+                location.status.includes('Open') ? 'text-green-600' : 'text-red-600'
+              }`}>
+                {location.status}
+              </span>
+            </div>
+          )}
+          
+          {location.tags.phone && (
+            <div className="flex items-center text-sm">
+              <FaInfoCircle className="text-gray-500 mr-2" />
+              <a href={`tel:${location.tags.phone}`} className="text-blue-600 hover:underline">
+                {location.tags.phone}
+              </a>
+            </div>
+          )}
+        </div>
+        
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            onClick={() => handleNavigation(location.lat, location.lon, 'walk')}
+            className="flex items-center justify-center bg-blue-100 text-blue-700 px-3 py-2 rounded-md text-sm hover:bg-blue-200 transition-colors"
+          >
+            <FaWalking className="mr-1" /> Walk
+          </button>
+          <button
+            onClick={() => handleNavigation(location.lat, location.lon, 'drive')}
+            className="flex items-center justify-center bg-purple-100 text-purple-700 px-3 py-2 rounded-md text-sm hover:bg-purple-200 transition-colors"
+          >
+            <FaCar className="mr-1" /> Drive
+          </button>
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div className="relative h-full w-full">
+      <div className="h-[600px] w-full rounded-xl overflow-hidden shadow-2xl relative border-2 border-gray-200 bg-white">
+        <AnimatePresence>
+          {loading && (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-white/80 z-[1000] flex items-center justify-center flex-col"
+            >
+              <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-purple-600 mb-4"></div>
+              <p className="text-purple-700 font-medium">Finding your location...</p>
+            </motion.div>
+          )}
+        </AnimatePresence>
+        
         {position ? (
           <MapContainer
             ref={mapRef}
@@ -230,224 +324,207 @@ export default function ResourceMap() {
               </Popup>
             </Marker>
 
-            {nearestLocations.hospital && (
+            {shouldShowMarker('hospital') && nearestLocations.hospital && (
               <Marker
                 position={[nearestLocations.hospital.lat, nearestLocations.hospital.lon]}
                 icon={createCustomIcon('blue')}
               >
                 <Popup>
-                  <div className="min-w-[200px]">
-                    <div className="flex items-center mb-2">
-                      <FaHospitalSymbol className="text-blue-600 mr-2" />
-                      <h3 className="font-bold text-lg">{nearestLocations.hospital.tags.name}</h3>
-                    </div>
-                    <p className="text-sm mb-1">
-                      Distance: {Math.round(nearestLocations.hospital.distance)}m
-                    </p>
-                    <p className="text-sm mb-1">
-                      Status:{' '}
-                      <span className={`font-semibold ${
-                        nearestLocations.hospital.status.includes('Open') ? 'text-green-600' : 'text-red-600'
-                      }`}>
-                        {nearestLocations.hospital.status}
-                      </span>
-                    </p>
-                    <p className="text-xs">
-                      Lat: {nearestLocations.hospital.lat}, Lng: {nearestLocations.hospital.lon}
-                    </p>
-                    <button
-                      onClick={() =>
-                        handleNavigation(nearestLocations.hospital.lat, nearestLocations.hospital.lon)
-                      }
-                      className="bg-purple-600 text-white px-3 py-1 rounded-md text-sm hover:bg-purple-700 transition-colors w-full mt-2"
-                    >
-                      Get Directions
-                    </button>
-                  </div>
+                  <PopupContent location={nearestLocations.hospital} type="hospital" />
                 </Popup>
               </Marker>
             )}
 
-            {otherLocations.hospital.map((loc) => (
+            {shouldShowMarker('hospital') && otherLocations.hospital.map((loc) => (
               <Marker key={`hospital-${loc.id}`} position={[loc.lat, loc.lon]} icon={defaultIcon}>
                 <Popup>
-                  <div className="min-w-[200px]">
-                    <div className="flex items-center mb-2">
-                      <FaHospitalSymbol className="text-blue-600 mr-2" />
-                      <h3 className="font-bold text-lg">{loc.tags.name}</h3>
-                    </div>
-                    <p className="text-sm mb-1">Distance: {Math.round(loc.distance)}m</p>
-                    <p className="text-xs">
-                      Lat: {loc.lat}, Lng: {loc.lon}
-                    </p>
-                    <button
-                      onClick={() => handleNavigation(loc.lat, loc.lon)}
-                      className="bg-purple-600 text-white px-3 py-1 rounded-md text-sm hover:bg-purple-700 transition-colors w-full mt-2"
-                    >
-                      Get Directions
-                    </button>
-                  </div>
+                  <PopupContent location={loc} type="hospital" />
                 </Popup>
               </Marker>
             ))}
 
-            {nearestLocations.police && (
+            {shouldShowMarker('police') && nearestLocations.police && (
               <Marker
                 position={[nearestLocations.police.lat, nearestLocations.police.lon]}
                 icon={createCustomIcon('green')}
               >
                 <Popup>
-                  <div className="min-w-[200px]">
-                    <div className="flex items-center mb-2">
-                      <FaShieldAlt className="text-green-600 mr-2" />
-                      <h3 className="font-bold text-lg">{nearestLocations.police.tags.name}</h3>
-                    </div>
-                    <p className="text-sm mb-1">
-                      Distance: {Math.round(nearestLocations.police.distance)}m
-                    </p>
-                    <p className="text-xs">
-                      Lat: {nearestLocations.police.lat}, Lng: {nearestLocations.police.lon}
-                    </p>
-                    <button
-                      onClick={() =>
-                        handleNavigation(nearestLocations.police.lat, nearestLocations.police.lon)
-                      }
-                      className="bg-purple-600 text-white px-3 py-1 rounded-md text-sm hover:bg-purple-700 transition-colors w-full mt-2"
-                    >
-                      Get Directions
-                    </button>
-                  </div>
+                  <PopupContent location={nearestLocations.police} type="police" />
                 </Popup>
               </Marker>
             )}
 
-            {otherLocations.police.map((loc) => (
+            {shouldShowMarker('police') && otherLocations.police.map((loc) => (
               <Marker key={`police-${loc.id}`} position={[loc.lat, loc.lon]} icon={defaultIcon}>
                 <Popup>
-                  <div className="min-w-[200px]">
-                    <div className="flex items-center mb-2">
-                      <FaShieldAlt className="text-green-600 mr-2" />
-                      <h3 className="font-bold text-lg">{loc.tags.name}</h3>
-                    </div>
-                    <p className="text-sm mb-1">Distance: {Math.round(loc.distance)}m</p>
-                    <p className="text-xs">
-                      Lat: {loc.lat}, Lng: {loc.lon}
-                    </p>
-                    <button
-                      onClick={() => handleNavigation(loc.lat, loc.lon)}
-                      className="bg-purple-600 text-white px-3 py-1 rounded-md text-sm hover:bg-purple-700 transition-colors w-full mt-2"
-                    >
-                      Get Directions
-                    </button>
-                  </div>
+                  <PopupContent location={loc} type="police" />
                 </Popup>
               </Marker>
             ))}
 
-            {nearestLocations.pharmacy && (
+            {shouldShowMarker('pharmacy') && nearestLocations.pharmacy && (
               <Marker
                 position={[nearestLocations.pharmacy.lat, nearestLocations.pharmacy.lon]}
                 icon={createCustomIcon('orange')}
               >
                 <Popup>
-                  <div className="min-w-[200px]">
-                    <div className="flex items-center mb-2">
-                      <FaMedkit className="text-orange-600 mr-2" />
-                      <h3 className="font-bold text-lg">{nearestLocations.pharmacy.tags.name}</h3>
-                    </div>
-                    <p className="text-sm mb-1">
-                      Distance: {Math.round(nearestLocations.pharmacy.distance)}m
-                    </p>
-                    <p className="text-sm mb-1">
-                      Status:{' '}
-                      <span className={`font-semibold ${
-                        nearestLocations.pharmacy.status.includes('Open') ? 'text-green-600' : 'text-red-600'
-                      }`}>
-                        {nearestLocations.pharmacy.status}
-                      </span>
-                    </p>
-                    <p className="text-xs">
-                      Lat: {nearestLocations.pharmacy.lat}, Lng: {nearestLocations.pharmacy.lon}
-                    </p>
-                    <button
-                      onClick={() =>
-                        handleNavigation(nearestLocations.pharmacy.lat, nearestLocations.pharmacy.lon)
-                      }
-                      className="bg-purple-600 text-white px-3 py-1 rounded-md text-sm hover:bg-purple-700 transition-colors w-full mt-2"
-                    >
-                      Get Directions
-                    </button>
-                  </div>
+                  <PopupContent location={nearestLocations.pharmacy} type="pharmacy" />
                 </Popup>
               </Marker>
             )}
 
-            {otherLocations.pharmacy.map((loc) => (
+            {shouldShowMarker('pharmacy') && otherLocations.pharmacy.map((loc) => (
               <Marker key={`pharmacy-${loc.id}`} position={[loc.lat, loc.lon]} icon={defaultIcon}>
                 <Popup>
-                  <div className="min-w-[200px]">
-                    <div className="flex items-center mb-2">
-                      <FaMedkit className="text-orange-600 mr-2" />
-                      <h3 className="font-bold text-lg">{loc.tags.name}</h3>
-                    </div>
-                    <p className="text-sm mb-1">Distance: {Math.round(loc.distance)}m</p>
-                    <p className="text-xs">
-                      Lat: {loc.lat}, Lng: {loc.lon}
-                    </p>
-                    <button
-                      onClick={() => handleNavigation(loc.lat, loc.lon)}
-                      className="bg-purple-600 text-white px-3 py-1 rounded-md text-sm hover:bg-purple-700 transition-colors w-full mt-2"
-                    >
-                      Get Directions
-                    </button>
-                  </div>
+                  <PopupContent location={loc} type="pharmacy" />
                 </Popup>
               </Marker>
             ))}
           </MapContainer>
         ) : (
-          <div className="h-full w-full bg-gray-100 flex items-center justify-center">
-            <p className="text-gray-500">Enabling location services...</p>
+          <div className="h-full w-full bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
+            <div className="text-center p-6 bg-white rounded-xl shadow-md max-w-md border border-gray-200">
+              <h3 className="text-xl font-bold text-purple-700 mb-2">Location Services Required</h3>
+              <p className="text-gray-600 mb-4">
+                Please enable location services to view nearby resources. We'll show you hospitals, 
+                police stations, and pharmacies in your area.
+              </p>
+              <button 
+                onClick={() => window.location.reload()}
+                className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors"
+              >
+                Try Again
+              </button>
+            </div>
           </div>
         )}
 
-        <div className="absolute top-2 right-2 z-[1000] bg-white p-2 rounded-md shadow-md text-sm">
-          <div className="flex items-center mb-2">
-            <div className="w-4 h-4 bg-red-600 mr-2 rounded-full"></div>
-            Your Location
-          </div>
-          <div className="flex items-center mb-2">
-            <div className="w-4 h-4" style={{ backgroundColor: '#1E90FF' }} className="mr-2 rounded-full"></div>
-            Nearest Hospital
-          </div>
-          <div className="flex items-center mb-2">
-            <div className="w-4 h-4" style={{ backgroundColor: '#28a745' }} className="mr-2 rounded-full"></div>
-            Nearest Police
-          </div>
-          <div className="flex items-center mb-2">
-            <div className="w-4 h-4" style={{ backgroundColor: '#fd7e14' }} className="mr-2 rounded-full"></div>
-            Nearest Medical Store
-          </div>
-          <div className="flex items-center">
-            <div className="w-4 h-4 bg-gray-500 mr-2 rounded-full"></div>
-            Other Nearby
-          </div>
+        {/* Filter Controls */}
+        <div className="absolute top-4 left-4 z-[1000] flex space-x-2">
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setActiveFilter('all')}
+            className={`px-4 py-2 rounded-full text-sm font-medium shadow-md transition-all ${
+              activeFilter === 'all' 
+                ? 'bg-purple-600 text-white' 
+                : 'bg-white text-gray-700 hover:bg-gray-50'
+            }`}
+          >
+            All Resources
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setActiveFilter('hospital')}
+            className={`px-4 py-2 rounded-full text-sm font-medium shadow-md transition-all ${
+              activeFilter === 'hospital' 
+                ? 'bg-blue-600 text-white' 
+                : 'bg-white text-gray-700 hover:bg-gray-50'
+            }`}
+          >
+            Hospitals
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setActiveFilter('police')}
+            className={`px-4 py-2 rounded-full text-sm font-medium shadow-md transition-all ${
+              activeFilter === 'police' 
+                ? 'bg-green-600 text-white' 
+                : 'bg-white text-gray-700 hover:bg-gray-50'
+            }`}
+          >
+            Police
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setActiveFilter('pharmacy')}
+            className={`px-4 py-2 rounded-full text-sm font-medium shadow-md transition-all ${
+              activeFilter === 'pharmacy' 
+                ? 'bg-orange-600 text-white' 
+                : 'bg-white text-gray-700 hover:bg-gray-50'
+            }`}
+          >
+            Pharmacies
+          </motion.button>
         </div>
-      </div>
 
-      <div className="absolute bottom-4 left-4 flex flex-col space-y-2 z-[1000]">
-        <button
-          onClick={handleRecenter}
-          className="flex items-center bg-white p-2 rounded-md shadow-md text-sm hover:bg-gray-100 transition-colors"
-        >
-          <FaSyncAlt className="mr-1" /> Recenter
-        </button>
-        <button
-          onClick={toggleTileLayer}
-          className="flex items-center bg-white p-2 rounded-md shadow-md text-sm hover:bg-gray-100 transition-colors"
-        >
-          <FaSatellite className="mr-1" /> {satelliteView ? 'Default View' : 'Satellite View'}
-        </button>
+        {/* Legend */}
+        <AnimatePresence>
+          {showLegend && (
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              className="absolute bottom-4 right-4 z-[1000] bg-white/90 backdrop-blur-sm p-4 rounded-xl shadow-lg border border-white/20"
+            >
+              <div className="flex justify-between items-center mb-2">
+                <h3 className="font-bold text-gray-700">Map Legend</h3>
+                <button 
+                  onClick={toggleLegend}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  ×
+                </button>
+              </div>
+              <div className="space-y-2">
+                <div className="flex items-center">
+                  <div className="w-4 h-4 bg-red-600 mr-2 rounded-full"></div>
+                  <span className="text-sm">Your Location</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="w-4 h-4 bg-blue-600 mr-2 rounded-full"></div>
+                  <span className="text-sm">Nearest Hospital</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="w-4 h-4 bg-green-600 mr-2 rounded-full"></div>
+                  <span className="text-sm">Nearest Police</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="w-4 h-4 bg-orange-600 mr-2 rounded-full"></div>
+                  <span className="text-sm">Nearest Pharmacy</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="w-4 h-4 bg-gray-500 mr-2 rounded-full"></div>
+                  <span className="text-sm">Other Locations</span>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Map Controls */}
+        <div className="absolute bottom-4 left-4 flex flex-col space-y-2 z-[1000]">
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={handleRecenter}
+            className="flex items-center justify-center bg-white/90 backdrop-blur-sm p-3 rounded-full shadow-md hover:bg-white transition-colors"
+            title="Recenter Map"
+          >
+            <FaSyncAlt className="text-purple-600" />
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={toggleTileLayer}
+            className="flex items-center justify-center bg-white/90 backdrop-blur-sm p-3 rounded-full shadow-md hover:bg-white transition-colors"
+            title="Toggle View"
+          >
+            <FaSatellite className="text-purple-600" />
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={toggleLegend}
+            className="flex items-center justify-center bg-white/90 backdrop-blur-sm p-3 rounded-full shadow-md hover:bg-white transition-colors"
+            title="Toggle Legend"
+          >
+            <FaInfoCircle className="text-purple-600" />
+          </motion.button>
+        </div>
       </div>
     </div>
   );

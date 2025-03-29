@@ -10,428 +10,426 @@ import {
   ResponsiveContainer,
   Tooltip,
   XAxis,
-  YAxis,
-  Legend
+  YAxis
 } from "recharts";
 import {
-  Droplet,
   HeartPulse,
   CalendarDays,
-  Flame,
-  Dumbbell,
   Venus,
+  AlertTriangle,
+  Shield,
+  Droplet,
+  Zap,
+  Thermometer,
+  Activity,
+  Pill,
+  Soup,
+  Dumbbell,
+  MessageCircle,
+  FileText,
+  Bell,
+  Stethoscope
 } from "lucide-react";
 
 const HealthAnalysis = () => {
-  // Initialize with sample data for better UX
   const [healthData, setHealthData] = useState({
-    age: 28,
-    weight: 62,
-    height: 165,
-    waist: 72,
-    hips: 98,
-    steps: 7500,
-    water: 1200,
     lastPeriod: new Date().toISOString().split('T')[0],
-    cycleLength: 28
+    cycleLength: 28,
+    symptoms: {
+      cramps: 3,
+      bloating: 2,
+      headache: 1
+    },
+    pcodFactors: {
+      irregularCycles: false,
+      hairGrowth: false,
+      weightGain: false,
+      acne: false
+    },
+    mentalHealth: {
+      stress: 4,
+      sleep: 7,
+      mood: 3
+    },
+    hydration: 1200,
+    medications: [
+      { id: 1, name: "Multivitamin", time: "08:00", taken: false },
+      { id: 2, name: "Iron Supplement", time: "14:00", taken: false }
+    ],
+    nutrition: {
+      water: 1200,
+      calories: 1800,
+      protein: 45
+    },
+    fitness: {
+      steps: 6500,
+      exercise: 45
+    },
+    communityPosts: [
+      { id: 1, user: "Sarah", text: "Great tips for managing cramps! 💪" },
+      { id: 2, user: "Priya", text: "Anyone tried yoga for PCOD?" }
+    ]
   });
 
   const [analysis, setAnalysis] = useState({
-    bmi: null,
-    whr: null,
-    nextPeriod: null,
+    bmi: 22.5,
+    whr: 0.72,
+    fertilityWindow: "Day 10-15",
+    pcodRisk: 35,
     cycleHistory: [
-      { date: '2023-10-01', length: 28 },
-      { date: '2023-11-01', length: 29 },
-      { date: '2023-12-01', length: 27 }
+      { day: 1, fertility: 2, phase: "Menstrual" },
+      { day: 5, fertility: 4, phase: "Follicular" },
+      { day: 14, fertility: 9, phase: "Ovulation" },
+      { day: 22, fertility: 5, phase: "Luteal" }
     ],
-    hydration: 1200,
-    stepsHistory: [
-      { date: 'Mon', steps: 5000 },
-      { date: 'Tue', steps: 7500 },
-      { date: 'Wed', steps: 6000 },
-      { date: 'Thu', steps: 8000 },
-      { date: 'Fri', steps: 6500 },
-      { date: 'Sat', steps: 9000 },
-      { date: 'Sun', steps: 4000 }
+    nearbyResources: [
+      { name: "Women's Clinic", distance: "1.2km", type: "medical" },
+      { name: "24/7 Pharmacy", distance: "0.8km", type: "pharmacy" }
     ],
-    symptomFrequency: {
-      'Cramps': 3,
-      'Headache': 2,
-      'Fatigue': 5
-    }
+    ovulationCalendar: [
+      { date: "2024-03-01", fertile: false },
+      { date: "2024-03-10", fertile: true },
+      { date: "2024-03-14", fertile: true }
+    ],
+    healthReports: [
+      { month: "February", summary: "Regular cycles, improved sleep" }
+    ]
   });
 
-  const COLORS = ["#8B5CF6", "#EC4899", "#3B82F6", "#10B981", "#F59E0B"];
-  const symptomsList = ["Cramps", "Headache", "Fatigue", "Mood Swings"];
+  const COLORS = ["#8B5CF6", "#EC4899", "#3B82F6", "#10B981"];
 
-  // Calculate metrics on component mount and when data changes
   useEffect(() => {
-    const bmi = calculateBMI();
-    const whr = calculateWHR();
-    const nextPeriod = predictCycle();
-    
-    setAnalysis(prev => ({
-      ...prev,
-      bmi,
-      whr,
-      nextPeriod
-    }));
+    const calculateMetrics = () => {
+      const pcodRisk = Math.min(
+        Object.values(healthData.pcodFactors).filter(Boolean).length * 20 +
+        (healthData.mentalHealth.stress > 5 ? 15 : 0),
+        100
+      );
+      setAnalysis(prev => ({ ...prev, pcodRisk }));
+    };
+    calculateMetrics();
   }, [healthData]);
 
-  // BMI Calculation
-  const calculateBMI = () => {
-    const { weight, height } = healthData;
-    if (weight && height) {
-      const hMeters = height / 100;
-      return (weight / (hMeters * hMeters)).toFixed(1);
-    }
-    return null;
-  };
-
-  // WHR Calculation with health interpretation
-  const calculateWHR = () => {
-    const { waist, hips } = healthData;
-    if (waist && hips) {
-      const ratio = (waist / hips).toFixed(2);
-      let interpretation = '';
-      
-      if (ratio < 0.80) interpretation = 'Low risk';
-      else if (ratio < 0.85) interpretation = 'Moderate risk';
-      else interpretation = 'High risk';
-      
-      return { ratio, interpretation };
-    }
-    return null;
-  };
-
-  // Hydration Tracker
-  const updateHydration = (amount) => {
-    const newHydration = Math.min(analysis.hydration + amount, 2000);
-    setAnalysis(prev => ({
-      ...prev,
-      hydration: newHydration
-    }));
+  // Existing handlers
+  const togglePCODFactor = (factor) => {
     setHealthData(prev => ({
       ...prev,
-      water: newHydration
+      pcodFactors: {
+        ...prev.pcodFactors,
+        [factor]: !prev.pcodFactors[factor]
+      }
     }));
   };
 
-  // Symptom Tracker
-  const toggleSymptom = (symptom) => {
-    setAnalysis(prev => {
-      const frequency = { ...prev.symptomFrequency };
-      frequency[symptom] = (frequency[symptom] || 0) + 1;
-      return { ...prev, symptomFrequency: frequency };
-    });
-  };
-
-  // Menstrual Cycle Prediction
-  const predictCycle = () => {
-    const { lastPeriod, cycleLength } = healthData;
-    if (lastPeriod && cycleLength) {
-      const nextDate = new Date(lastPeriod);
-      nextDate.setDate(nextDate.getDate() + parseInt(cycleLength));
-      return nextDate.toLocaleDateString();
-    }
-    return null;
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const newStepsEntry = {
-      steps: healthData.steps,
-      date: new Date().toLocaleDateString('en-US', { weekday: 'short' })
-    };
-    
-    setAnalysis(prev => ({
+  const updateHydration = (amount) => {
+    setHealthData(prev => ({
       ...prev,
-      stepsHistory: [...prev.stepsHistory.slice(-6), newStepsEntry]
+      hydration: Math.min(prev.hydration + amount, 2000)
     }));
   };
 
-  const symptomData = Object.entries(analysis.symptomFrequency).map(
-    ([name, value]) => ({ name, value })
+  // New handlers
+  const toggleMedication = (id) => {
+    setHealthData(prev => ({
+      ...prev,
+      medications: prev.medications.map(med =>
+        med.id === id ? { ...med, taken: !med.taken } : med
+      )
+    }));
+  };
+
+  const updateNutrition = (type, amount) => {
+    setHealthData(prev => ({
+      ...prev,
+      nutrition: {
+        ...prev.nutrition,
+        [type]: Math.max(0, prev.nutrition[type] + amount)
+      }
+    }));
+  };
+
+  const generateHealthReport = () => {
+    const pdfContent = `
+      Monthly Health Report:
+      - Average Cycle Length: ${healthData.cycleLength} days
+      - PCOD Risk Factor: ${analysis.pcodRisk}%
+      - Hydration Achievement: ${(healthData.hydration / 2000 * 100).toFixed(0)}%
+    `;
+    alert('Downloading health report:\n' + pdfContent);
+  };
+
+  const sendSafetyAlert = () => {
+    alert('Emergency alert sent to trusted contacts and local authorities!');
+  };
+
+  // New Components
+  const MedicationTracker = () => (
+    <div className="bg-white p-6 rounded-2xl shadow-lg border border-purple-100">
+      <h2 className="text-xl font-semibold text-purple-600 mb-4 flex items-center gap-2">
+        <Pill size={24} /> Medication Tracker
+      </h2>
+      <div className="space-y-3">
+        {healthData.medications.map(med => (
+          <div key={med.id} className="flex items-center justify-between bg-purple-50 p-3 rounded-lg">
+            <div>
+              <span className="font-medium">{med.name}</span>
+              <span className="text-sm text-purple-600 ml-2">{med.time}</span>
+            </div>
+            <button
+              onClick={() => toggleMedication(med.id)}
+              className={`p-1 rounded-full w-6 h-6 ${med.taken ? 'bg-green-500' : 'bg-gray-200'}`}
+            />
+          </div>
+        ))}
+      </div>
+    </div>
   );
 
-  // BMI Interpretation
-  const getBMIInterpretation = (bmi) => {
-    if (!bmi) return '';
-    if (bmi < 18.5) return 'Underweight';
-    if (bmi < 25) return 'Normal weight';
-    if (bmi < 30) return 'Overweight';
-    return 'Obese';
-  };
+  const NutritionTracker = () => (
+    <div className="bg-white p-6 rounded-2xl shadow-lg border border-purple-100">
+      <h2 className="text-xl font-semibold text-purple-600 mb-4 flex items-center gap-2">
+        <Soup size={24} /> Nutrition Tracker
+      </h2>
+      <div className="grid grid-cols-3 gap-4">
+        <div className="bg-purple-50 p-3 rounded-lg text-center">
+          <p className="text-xs text-purple-500">Water (ml)</p>
+          <div className="text-xl font-bold text-purple-600 flex items-center justify-center gap-2">
+            {healthData.nutrition.water}
+            <button
+              onClick={() => updateNutrition('water', 250)}
+              className="text-sm bg-purple-600 text-white px-2 rounded hover:bg-purple-700"
+            >
+              +250
+            </button>
+          </div>
+        </div>
+        <div className="bg-purple-50 p-3 rounded-lg text-center">
+          <p className="text-xs text-purple-500">Calories</p>
+          <div className="text-xl font-bold text-purple-600">{healthData.nutrition.calories}</div>
+        </div>
+        <div className="bg-purple-50 p-3 rounded-lg text-center">
+          <p className="text-xs text-purple-500">Protein (g)</p>
+          <div className="text-xl font-bold text-purple-600">{healthData.nutrition.protein}</div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const FitnessTracker = () => (
+    <div className="bg-white p-6 rounded-2xl shadow-lg border border-purple-100">
+      <h2 className="text-xl font-semibold text-purple-600 mb-4 flex items-center gap-2">
+        <Dumbbell size={24} /> Fitness Tracker
+      </h2>
+      <div className="grid grid-cols-2 gap-4">
+        <div className="bg-purple-50 p-4 rounded-xl">
+          <p className="text-xs text-purple-500">Steps Today</p>
+          <div className="text-2xl font-bold text-purple-600">
+            {healthData.fitness.steps.toLocaleString()}
+          </div>
+        </div>
+        <div className="bg-purple-50 p-4 rounded-xl">
+          <p className="text-xs text-purple-500">Exercise (min)</p>
+          <div className="text-2xl font-bold text-purple-600">
+            {healthData.fitness.exercise}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const CommunitySupport = () => (
+    <div className="bg-white p-6 rounded-2xl shadow-lg border border-purple-100">
+      <h2 className="text-xl font-semibold text-purple-600 mb-4 flex items-center gap-2">
+        <MessageCircle size={24} /> Community Support
+      </h2>
+      <div className="space-y-4">
+        {healthData.communityPosts.map(post => (
+          <div key={post.id} className="bg-purple-50 p-3 rounded-lg">
+            <p className="font-medium text-purple-600">{post.user}</p>
+            <p className="text-gray-600">{post.text}</p>
+          </div>
+        ))}
+        <button className="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700">
+          Join Discussion
+        </button>
+      </div>
+    </div>
+  );
+
+  const HealthReports = () => (
+    <div className="bg-white p-6 rounded-2xl shadow-lg border border-purple-100">
+      <h2 className="text-xl font-semibold text-purple-600 mb-4 flex items-center gap-2">
+        <FileText size={24} /> Health Reports
+      </h2>
+      <div className="space-y-3">
+        {analysis.healthReports.map(report => (
+          <div key={report.month} className="bg-purple-50 p-3 rounded-lg">
+            <p className="font-medium text-purple-600">{report.month}</p>
+            <p className="text-gray-600 text-sm">{report.summary}</p>
+          </div>
+        ))}
+        <button
+          onClick={generateHealthReport}
+          className="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700"
+        >
+          Generate Monthly Report
+        </button>
+      </div>
+    </div>
+  );
+
+  const SymptomTracker = () => (
+    <div className="bg-white p-6 rounded-2xl shadow-lg border border-purple-100">
+      <h2 className="text-xl font-semibold text-purple-600 mb-4 flex items-center gap-2">
+        <Thermometer size={24} /> Symptom Intensity
+      </h2>
+      <div className="h-48">
+        <ResponsiveContainer>
+          <BarChart data={Object.entries(healthData.symptoms).map(([name, value]) => ({ name, value }))}>
+            <XAxis dataKey="name" />
+            <YAxis />
+            <Tooltip />
+            <Bar dataKey="value" fill="#8B5CF6" />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  );
+
+  const OvulationCalendar = () => (
+    <div className="bg-white p-6 rounded-2xl shadow-lg border border-purple-100">
+      <h2 className="text-xl font-semibold text-purple-600 mb-4 flex items-center gap-2">
+        <CalendarDays size={24} /> Ovulation Calendar
+      </h2>
+      <div className="grid grid-cols-3 gap-2">
+        {analysis.ovulationCalendar.map((day, index) => (
+          <div key={index} className={`p-2 rounded-lg text-center text-sm ${
+            day.fertile ? 'bg-green-100 text-green-600' : 'bg-purple-50 text-purple-600'
+          }`}>
+            <p>{new Date(day.date).getDate()}</p>
+            <p className="text-xs">{day.fertile ? 'Fertile' : 'Normal'}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-purple-50 to-indigo-50 p-4 md:p-8">
+    <div className="min-h-screen bg-gradient-to-b from-purple-50 to-indigo-50 p-6">
+      <button
+        className="fixed top-[5.5rem] right-8 bg-red-500 hover:bg-red-600 text-white px-4 py-3 rounded-full shadow-xl flex items-center gap-2 z-50 transition-transform hover:scale-105"
+        onClick={sendSafetyAlert}
+      >
+        <AlertTriangle size={20} />
+        <span className="hidden sm:inline">Emergency SOS</span>
+      </button>
+
       <div className="max-w-7xl mx-auto space-y-8">
-        {/* Header */}
-        <div className="text-center mb-8 md:mb-12">
-          <h1 className="text-3xl md:text-4xl font-bold text-purple-600 mb-3 md:mb-4 flex items-center justify-center gap-2">
-            <HeartPulse size={32} className="hidden md:block" /> 
-            <span>Health & Wellness Dashboard</span>
+        <header className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-purple-600 flex items-center justify-center gap-2">
+            <Venus size={32} /> Astitva Health Companion
           </h1>
-          <p className="text-gray-600 text-base md:text-lg">
-            Track and analyze your health metrics in one place
-          </p>
-        </div>
+          <p className="text-gray-600 mt-2">Integrated Women's Health Management</p>
+        </header>
 
-        {/* Main Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-          {/* Body Analysis (BMI, WHR) */}
-          <div className="bg-white p-4 md:p-6 rounded-xl md:rounded-2xl shadow-lg border border-purple-100">
-            <h2 className="text-xl md:text-2xl font-bold text-purple-600 mb-3 md:mb-4 flex items-center gap-2">
-              <Venus size={20} className="flex-shrink-0" /> Body Analysis
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="bg-white p-6 rounded-2xl shadow-lg border border-purple-100">
+            <h2 className="text-xl font-semibold text-purple-600 mb-4 flex items-center gap-2">
+              <CalendarDays size={24} /> Cycle Tracker
             </h2>
-            <form onSubmit={handleSubmit} className="space-y-3 md:space-y-4">
-              <div className="grid grid-cols-2 gap-3">
-                {[
-                  { key: 'age', label: 'Age', unit: 'yrs' },
-                  { key: 'weight', label: 'Weight', unit: 'kg' },
-                  { key: 'height', label: 'Height', unit: 'cm' },
-                  { key: 'waist', label: 'Waist', unit: 'cm' },
-                  { key: 'hips', label: 'Hips', unit: 'cm' },
-                  { key: 'steps', label: 'Steps', unit: '' }
-                ].map(({ key, label, unit }) => (
-                  <div key={key} className="space-y-1">
-<label className="text-sm text-gray-500">{label} {unit && `(${unit})`}</label>
-<input
-                      type="number"
-                      className="w-full p-2 rounded-lg border focus:ring-2 focus:ring-purple-500 text-sm md:text-base"
-                      value={healthData[key]}
-                      onChange={(e) =>
-                        setHealthData({ ...healthData, [key]: e.target.value })
-                      }
-                      min="0"
-                    />
-                  </div>
-                ))}
+            <div className="grid grid-cols-2 gap-4 mb-4">
+              <div className="bg-purple-50 p-4 rounded-xl">
+                <p className="text-xs text-purple-500 mb-1">Current Phase</p>
+                <p className="font-bold text-purple-600">Follicular</p>
               </div>
-              <button
-                type="submit"
-                className="w-full bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition-all text-sm md:text-base"
-              >
-                Update Analysis
-              </button>
-            </form>
-            
-            {analysis.bmi && (
-              <div className="mt-4 md:mt-6 space-y-2">
-                <div className="bg-purple-50 p-3 rounded-lg">
-                  <div className="flex justify-between">
-                    <span>BMI:</span>
-                    <span className="font-bold text-purple-600">{analysis.bmi}</span>
-                  </div>
-                  <div className="text-xs text-purple-500 mt-1">
-                    {getBMIInterpretation(analysis.bmi)}
-                  </div>
-                </div>
-                {analysis.whr && (
-                  <div className="bg-purple-50 p-3 rounded-lg">
-                    <div className="flex justify-between">
-                      <span>WHR:</span>
-                      <span className="font-bold text-purple-600">{analysis.whr.ratio}</span>
-                    </div>
-                    <div className="text-xs text-purple-500 mt-1">
-                      {analysis.whr.interpretation}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Menstrual Cycle Tracker */}
-          <div className="bg-white p-4 md:p-6 rounded-xl md:rounded-2xl shadow-lg border border-purple-100">
-            <h2 className="text-xl md:text-2xl font-bold text-purple-600 mb-3 md:mb-4 flex items-center gap-2">
-              <CalendarDays size={20} className="flex-shrink-0" /> Cycle Tracker
-            </h2>
-            <div className="space-y-3 md:space-y-4">
-              <div className="space-y-1">
-                <label className="text-sm text-gray-500">Last Period</label>
-                <input
-                  type="date"
-                  className="w-full p-2 rounded-lg border focus:ring-2 focus:ring-purple-500 text-sm md:text-base"
-                  value={healthData.lastPeriod}
-                  onChange={(e) =>
-                    setHealthData({ ...healthData, lastPeriod: e.target.value })
-                  }
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="text-sm text-gray-500">Cycle Length (days)</label>
-                <input
-                  type="number"
-                  className="w-full p-2 rounded-lg border focus:ring-2 focus:ring-purple-500 text-sm md:text-base"
-                  value={healthData.cycleLength}
-                  onChange={(e) =>
-                    setHealthData({ ...healthData, cycleLength: e.target.value })
-                  }
-                  min="20"
-                  max="45"
-                />
-              </div>
-              
-              {analysis.nextPeriod && (
-                <div className="bg-purple-50 p-3 rounded-lg">
-                  <p className="text-purple-600 font-semibold text-sm md:text-base">
-                    Next predicted cycle: <span className="font-normal">{analysis.nextPeriod}</span>
-                  </p>
-                </div>
-              )}
-              
-              <div className="h-40">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={analysis.cycleHistory}>
-                    <XAxis dataKey="date" />
-                    <YAxis />
-                    <Tooltip />
-                    <Line
-                      type="monotone"
-                      dataKey="length"
-                      stroke="#8B5CF6"
-                      strokeWidth={2}
-                      dot={{ r: 4 }}
-                      activeDot={{ r: 6 }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
+              <div className="bg-purple-50 p-4 rounded-xl">
+                <p className="text-xs text-purple-500 mb-1">Fertility Window</p>
+                <p className="font-bold text-purple-600">{analysis.fertilityWindow}</p>
               </div>
             </div>
-          </div>
-
-          {/* Hydration Tracker */}
-          <div className="bg-white p-4 md:p-6 rounded-xl md:rounded-2xl shadow-lg border border-purple-100">
-            <h2 className="text-xl md:text-2xl font-bold text-purple-600 mb-3 md:mb-4 flex items-center gap-2">
-              <Droplet size={20} className="flex-shrink-0" /> Hydration
-            </h2>
-            <div className="text-center mb-3 md:mb-4">
-              <div
-                className="radial-progress text-purple-600 mx-auto text-sm md:text-base"
-                style={{ 
-                  "--value": (analysis.hydration / 2000) * 100,
-                  "--size": "8rem",
-                  "--thickness": "8px"
-                }}
-              >
-                <div className="flex flex-col">
-                  <span>{analysis.hydration}ml</span>
-                  <span className="text-xs text-gray-500">
-                    {(analysis.hydration / 2000 * 100).toFixed(0)}% of goal
-                  </span>
-                </div>
-              </div>
-            </div>
-            <div className="grid grid-cols-3 gap-2">
-              {[250, 500, 1000].map((amount) => (
-                <button
-                  key={amount}
-                  onClick={() => updateHydration(amount)}
-                  className="bg-purple-100 text-purple-600 p-2 rounded-lg hover:bg-purple-200 transition-colors text-sm"
-                >
-                  +{amount}ml
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Symptom Tracker */}
-          <div className="bg-white p-4 md:p-6 rounded-xl md:rounded-2xl shadow-lg border border-purple-100">
-            <h2 className="text-xl md:text-2xl font-bold text-purple-600 mb-3 md:mb-4 flex items-center gap-2">
-              <Flame size={20} className="flex-shrink-0" /> Symptom Tracker
-            </h2>
-            <div className="h-40 mb-3 md:mb-4">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={symptomData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={40}
-                    outerRadius={60}
-                    paddingAngle={2}
-                    dataKey="value"
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                    >
-                    {symptomData.map((entry, index) => (
-                      <Cell key={index} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip formatter={(value) => [`${value} times`, 'Frequency']} />
-                  <Legend />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              {symptomsList.map((symptom) => (
-                <button
-                  key={symptom}
-                  onClick={() => toggleSymptom(symptom)}
-                  className={`flex items-center justify-center gap-2 p-2 rounded-lg text-sm transition-colors ${
-                    analysis.symptomFrequency[symptom]
-                      ? 'bg-purple-600 text-white'
-                      : 'bg-purple-50 text-purple-600 hover:bg-purple-100'
-                  }`}
-                >
-                  {symptom}
-                  {analysis.symptomFrequency[symptom] && (
-                    <span className="text-xs bg-white text-purple-600 rounded-full w-5 h-5 flex items-center justify-center">
-                      {analysis.symptomFrequency[symptom]}
-                    </span>
-                  )}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Activity Tracker */}
-          <div className="bg-white p-4 md:p-6 rounded-xl md:rounded-2xl shadow-lg border border-purple-100">
-            <h2 className="text-xl md:text-2xl font-bold text-purple-600 mb-3 md:mb-4 flex items-center gap-2">
-              <Dumbbell size={20} className="flex-shrink-0" /> Activity
-            </h2>
             <div className="h-48">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={analysis.stepsHistory}>
-                  <XAxis dataKey="date" />
-                  <YAxis />
+              <ResponsiveContainer>
+                <LineChart data={analysis.cycleHistory}>
+                  <XAxis dataKey="day" />
                   <Tooltip />
-                  <Legend />
-                  <Bar 
-                    dataKey="steps" 
-                    fill="#8B5CF6" 
-                    radius={[4, 4, 0, 0]} 
-                    name="Daily Steps"
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-
-          {/* Health Trends */}
-          <div className="bg-white p-4 md:p-6 rounded-xl md:rounded-2xl shadow-lg border border-purple-100">
-            <h2 className="text-xl md:text-2xl font-bold text-purple-600 mb-3 md:mb-4">
-              Weekly Steps Trend
-            </h2>
-            <div className="h-48">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={analysis.stepsHistory}>
-                  <XAxis dataKey="date" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
                   <Line
                     type="monotone"
-                    dataKey="steps"
+                    dataKey="fertility"
                     stroke="#8B5CF6"
                     strokeWidth={2}
-                    dot={{ r: 4 }}
-                    activeDot={{ r: 6 }}
-                    name="Steps"
+                    dot={{ fill: "#EC4899" }}
                   />
                 </LineChart>
               </ResponsiveContainer>
+            </div>
+          </div>
+
+          <div className="bg-white p-6 rounded-2xl shadow-lg border border-purple-100">
+            <h2 className="text-xl font-semibold text-purple-600 mb-4 flex items-center gap-2">
+              <Activity size={24} /> PCOD Monitor
+            </h2>
+            <div className="flex items-center gap-4 mb-4">
+              <div className="radial-progress text-purple-600" 
+                   style={{ "--value": analysis.pcodRisk, "--size": "6rem" }}>
+                {analysis.pcodRisk}%
+              </div>
+              <div className="flex-1">
+                <div className="grid grid-cols-2 gap-2">
+                  {Object.entries(healthData.pcodFactors).map(([factor, status]) => (
+                    <button
+                      key={factor}
+                      onClick={() => togglePCODFactor(factor)}
+                      className={`p-2 rounded-lg text-sm ${
+                        status ? 'bg-purple-600 text-white' : 'bg-purple-50 text-purple-600'
+                      }`}
+                    >
+                      {factor.replace(/([A-Z])/g, ' $1')}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div className="bg-purple-50 p-4 rounded-xl">
+              <p className="text-sm text-purple-600">
+                {analysis.pcodRisk > 50 
+                  ? "Consult a specialist for comprehensive care"
+                  : "Maintain healthy lifestyle habits"}
+              </p>
+            </div>
+          </div>
+
+          <MedicationTracker />
+          <NutritionTracker />
+          <FitnessTracker />
+          <CommunitySupport />
+          <HealthReports />
+          <SymptomTracker />
+          <OvulationCalendar />
+
+          <div className="bg-white p-6 rounded-2xl shadow-lg border border-purple-100">
+            <h2 className="text-xl font-semibold text-purple-600 mb-4 flex items-center gap-2">
+              <Shield size={24} /> Health & Safety
+            </h2>
+            <div className="space-y-4">
+              <div className="bg-purple-50 p-4 rounded-xl">
+                <h3 className="text-sm font-semibold text-purple-600 mb-2">Nearby Resources</h3>
+                <div className="space-y-2">
+                  {analysis.nearbyResources.map((resource, index) => (
+                    <div key={index} className="flex justify-between items-center p-2 hover:bg-purple-100 rounded-lg">
+                      <span>{resource.name}</span>
+                      <span className="text-purple-600 text-sm">{resource.distance}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="bg-red-50 p-4 rounded-xl">
+                <h3 className="text-sm font-semibold text-red-600 mb-2">Quick Safety Tips</h3>
+                <ul className="list-disc pl-5 text-red-500 text-sm space-y-2">
+                  <li>Emergency SOS: Shake phone 3 times</li>
+                  <li>Nearest police station: 1.5km</li>
+                  <li>24/7 helpline: 112</li>
+                </ul>
+              </div>
             </div>
           </div>
         </div>
