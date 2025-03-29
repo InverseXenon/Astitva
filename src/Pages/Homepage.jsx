@@ -25,7 +25,7 @@ const features = [
     title: 'Resource',
     description: 'Access a wealth of medical and general resources to support your personal and professional growth.',
     icon: '🌐', // Globe for general resources
-    path: '/resource',
+    path: '/resources',
   },
   {
     title: 'Health',
