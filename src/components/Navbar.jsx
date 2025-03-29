@@ -32,7 +32,7 @@ const Navbar = () => {
           <Link to="/" className="hover:text-purple-500 transition">Home</Link>
           <Link to="/jobfindings" className="hover:text-purple-500 transition">Jobs</Link>
           <Link to="/health-wellness" className="hover:text-purple-500 transition">Health</Link>
-          <Link to="/resource-finder" className="hover:text-purple-500 transition">Resource Finder</Link>
+          <Link to="/resources" className="hover:text-purple-500 transition">Resource Finder</Link>
           <Link to="/community" className="hover:text-purple-500 transition">Community</Link>
 
           {/* Dropdown for More Services */}

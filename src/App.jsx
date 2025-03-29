@@ -11,6 +11,7 @@ import Footer from './components/Footer';
 import UserProfile from './components/UserProfile';
 import './App.css';
 import FloatingChat from './components/FloatingChat';
+import ResourceFinderPage from './Pages/ResourceFinderPage'; 
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
           <Route path="/jobfindings" element={<JobFindings />} />
           <Route path="/health-wellness" element={<HealthAnalysis />} />
           <Route path="/community" element={<CommunityPage />} /> {/* New community route */}
+          <Route path="/resources" element={<ResourceFinderPage />} /> {/* New resources route */}
 
           {/* Authentication Routes */}
           <Route
