@@ -1,6 +1,6 @@
 # Astitva - Empower • Elevate • Evolve
 
-![Astitva Logo](https://via.placeholder.com/150)
+
 
 ## 🌟 Overview
 
