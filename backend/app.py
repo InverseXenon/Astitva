@@ -11,7 +11,7 @@ from PIL import Image
 import io
 
 from config import config
-from models import db, User, Post, Comment, JobPost, PostCategory, UserActivity
+from models import db, User, Post, Comment, JobPost, PostCategory, UserActivity, Vote, VoteType, Award, AwardType
 
 def create_app(config_name=None):
     if config_name is None:
@@ -188,8 +188,11 @@ def create_app(config_name=None):
             
             posts = query.paginate(page=page, per_page=per_page, error_out=False)
             
+            # Pass user_id for vote status
+            user_id = request.args.get('user_id')
+            
             return jsonify({
-                'posts': [post.to_dict() for post in posts.items],
+                'posts': [post.to_dict(user_id=user_id) for post in posts.items],
                 'pagination': {
                     'page': page,
                     'pages': posts.pages,
@@ -244,45 +247,162 @@ def create_app(config_name=None):
             
             return jsonify({
                 'message': 'Post created successfully',
-                'post': post.to_dict()
+                'post': post.to_dict(user_id=data['user_id'])
             }), 201
             
         except Exception as e:
             db.session.rollback()
             return jsonify({'error': 'Failed to create post'}), 500
     
-    @app.route('/api/posts/<post_id>/like', methods=['POST'])
-    @limiter.limit("30/minute")
-    def toggle_like_post(post_id):
+    @app.route('/api/posts/<post_id>/vote', methods=['POST'])
+    @limiter.limit("60/minute")
+    def vote_post(post_id):
         try:
             data = request.get_json()
             user_id = data.get('user_id')
+            vote_type = data.get('vote_type')  # 'upvote', 'downvote', or 'remove'
             
             if not user_id:
                 return jsonify({'error': 'User ID required'}), 400
             
+            if vote_type not in ['upvote', 'downvote', 'remove']:
+                return jsonify({'error': 'Invalid vote type'}), 400
+            
             post = Post.query.get_or_404(post_id)
             user = User.query.get_or_404(user_id)
             
-            if post in user.liked_posts:
-                user.liked_posts.remove(post)
-                post.likes_count = max(0, post.likes_count - 1)
-                liked = False
+            # Check existing vote
+            existing_vote = Vote.query.filter_by(user_id=user_id, post_id=post_id).first()
+            
+            if vote_type == 'remove' or (existing_vote and existing_vote.vote_type.value == vote_type):
+                # Remove existing vote
+                if existing_vote:
+                    if existing_vote.vote_type == VoteType.UPVOTE:
+                        post.upvotes = max(0, post.upvotes - 1)
+                    else:
+                        post.downvotes = max(0, post.downvotes - 1)
+                    db.session.delete(existing_vote)
+                    user_vote = None
+                else:
+                    user_vote = None
             else:
-                user.liked_posts.append(post)
-                post.likes_count += 1
-                liked = True
+                # Update existing vote or create new one
+                if existing_vote:
+                    # Change vote type
+                    if existing_vote.vote_type == VoteType.UPVOTE:
+                        post.upvotes = max(0, post.upvotes - 1)
+                        post.downvotes += 1
+                    else:
+                        post.downvotes = max(0, post.downvotes - 1)
+                        post.upvotes += 1
+                    existing_vote.vote_type = VoteType(vote_type)
+                    user_vote = vote_type
+                else:
+                    # Create new vote
+                    new_vote = Vote(
+                        user_id=user_id,
+                        post_id=post_id,
+                        vote_type=VoteType(vote_type)
+                    )
+                    db.session.add(new_vote)
+                    
+                    if vote_type == 'upvote':
+                        post.upvotes += 1
+                    else:
+                        post.downvotes += 1
+                    user_vote = vote_type
+            
+            # Update post score and user karma
+            post.update_score()
+            user.update_karma()
             
             db.session.commit()
             
             return jsonify({
-                'liked': liked,
-                'likes_count': post.likes_count
+                'user_vote': user_vote,
+                'upvotes': post.upvotes,
+                'downvotes': post.downvotes,
+                'score': post.score
             })
             
         except Exception as e:
             db.session.rollback()
-            return jsonify({'error': 'Failed to toggle like'}), 500
+            return jsonify({'error': 'Failed to vote on post'}), 500
+    
+    @app.route('/api/comments/<comment_id>/vote', methods=['POST'])
+    @limiter.limit("60/minute")
+    def vote_comment(comment_id):
+        try:
+            data = request.get_json()
+            user_id = data.get('user_id')
+            vote_type = data.get('vote_type')  # 'upvote', 'downvote', or 'remove'
+            
+            if not user_id:
+                return jsonify({'error': 'User ID required'}), 400
+            
+            if vote_type not in ['upvote', 'downvote', 'remove']:
+                return jsonify({'error': 'Invalid vote type'}), 400
+            
+            comment = Comment.query.get_or_404(comment_id)
+            user = User.query.get_or_404(user_id)
+            
+            # Check existing vote
+            existing_vote = Vote.query.filter_by(user_id=user_id, comment_id=comment_id).first()
+            
+            if vote_type == 'remove' or (existing_vote and existing_vote.vote_type.value == vote_type):
+                # Remove existing vote
+                if existing_vote:
+                    if existing_vote.vote_type == VoteType.UPVOTE:
+                        comment.upvotes = max(0, comment.upvotes - 1)
+                    else:
+                        comment.downvotes = max(0, comment.downvotes - 1)
+                    db.session.delete(existing_vote)
+                    user_vote = None
+                else:
+                    user_vote = None
+            else:
+                # Update existing vote or create new one
+                if existing_vote:
+                    # Change vote type
+                    if existing_vote.vote_type == VoteType.UPVOTE:
+                        comment.upvotes = max(0, comment.upvotes - 1)
+                        comment.downvotes += 1
+                    else:
+                        comment.downvotes = max(0, comment.downvotes - 1)
+                        comment.upvotes += 1
+                    existing_vote.vote_type = VoteType(vote_type)
+                    user_vote = vote_type
+                else:
+                    # Create new vote
+                    new_vote = Vote(
+                        user_id=user_id,
+                        comment_id=comment_id,
+                        vote_type=VoteType(vote_type)
+                    )
+                    db.session.add(new_vote)
+                    
+                    if vote_type == 'upvote':
+                        comment.upvotes += 1
+                    else:
+                        comment.downvotes += 1
+                    user_vote = vote_type
+            
+            # Update comment score and user karma
+            comment.update_score()
+            user.update_karma()
+            
+            db.session.commit()
+            
+            return jsonify({
+                'user_vote': user_vote,
+                'upvotes': comment.upvotes,
+                'downvotes': comment.downvotes,
+                'score': comment.score
+            })
+            
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'error': 'Failed to vote on comment'}), 500
     
     @app.route('/api/posts/<post_id>/comments', methods=['GET'])
     def get_comments(post_id):
@@ -298,8 +418,11 @@ def create_app(config_name=None):
                 page=page, per_page=per_page, error_out=False
             )
             
+            # Pass user_id for vote status
+            user_id = request.args.get('user_id')
+            
             return jsonify({
-                'comments': [comment.to_dict() for comment in comments.items],
+                'comments': [comment.to_dict(user_id=user_id) for comment in comments.items],
                 'pagination': {
                     'page': page,
                     'pages': comments.pages,
@@ -339,7 +462,7 @@ def create_app(config_name=None):
             
             return jsonify({
                 'message': 'Comment created successfully',
-                'comment': comment.to_dict()
+                'comment': comment.to_dict(user_id=data['user_id'])
             }), 201
             
         except Exception as e:
@@ -388,6 +511,181 @@ def create_app(config_name=None):
             
         except Exception as e:
             return jsonify({'error': 'Failed to fetch jobs'}), 500
+    
+    @app.route('/api/posts/<post_id>/award', methods=['POST'])
+    @limiter.limit("10/minute")
+    def award_post(post_id):
+        try:
+            data = request.get_json()
+            giver_id = data.get('user_id')
+            award_type = data.get('award_type')
+            message = data.get('message', '')
+            
+            if not giver_id or not award_type:
+                return jsonify({'error': 'User ID and award type required'}), 400
+            
+            if award_type not in [award.value for award in AwardType]:
+                return jsonify({'error': 'Invalid award type'}), 400
+            
+            post = Post.query.get_or_404(post_id)
+            giver = User.query.get_or_404(giver_id)
+            
+            # Create award
+            award = Award(
+                giver_id=giver_id,
+                receiver_id=post.user_id,
+                post_id=post_id,
+                award_type=AwardType(award_type),
+                message=message
+            )
+            
+            db.session.add(award)
+            
+            # Update counts
+            post.awards_count += 1
+            giver.awards_given += 1
+            
+            if post.author:
+                post.author.awards_received += 1
+            
+            db.session.commit()
+            
+            return jsonify({
+                'message': 'Award given successfully',
+                'award': {
+                    'type': award_type,
+                    'message': message,
+                    'giver': giver.username
+                }
+            }), 201
+            
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'error': 'Failed to give award'}), 500
+    
+    @app.route('/api/users/<user_id>', methods=['GET'])
+    def get_user_profile(user_id):
+        try:
+            user = User.query.get_or_404(user_id)
+            requesting_user_id = request.args.get('requesting_user_id')
+            
+            # Check if profile is public or if it's the user's own profile
+            include_private = (requesting_user_id == user_id)
+            
+            if not user.profile_public and not include_private:
+                return jsonify({'error': 'Profile is private'}), 403
+            
+            return jsonify({
+                'user': user.to_dict(include_private=include_private)
+            })
+            
+        except Exception as e:
+            return jsonify({'error': 'Failed to fetch user profile'}), 500
+    
+    @app.route('/api/users/<user_id>/posts', methods=['GET'])
+    def get_user_posts(user_id):
+        try:
+            page = request.args.get('page', 1, type=int)
+            per_page = min(request.args.get('per_page', 10, type=int), 50)
+            requesting_user_id = request.args.get('requesting_user_id')
+            
+            user = User.query.get_or_404(user_id)
+            
+            # Check privacy
+            if not user.profile_public and requesting_user_id != user_id:
+                return jsonify({'error': 'Profile is private'}), 403
+            
+            posts = Post.query.filter_by(
+                user_id=user_id,
+                is_hidden=False
+            ).order_by(Post.created_at.desc()).paginate(
+                page=page, per_page=per_page, error_out=False
+            )
+            
+            return jsonify({
+                'posts': [post.to_dict(user_id=requesting_user_id) for post in posts.items],
+                'pagination': {
+                    'page': page,
+                    'pages': posts.pages,
+                    'per_page': per_page,
+                    'total': posts.total
+                }
+            })
+            
+        except Exception as e:
+            return jsonify({'error': 'Failed to fetch user posts'}), 500
+    
+    @app.route('/api/users/<user_id>/follow', methods=['POST'])
+    @limiter.limit("30/minute")
+    def toggle_follow_user(user_id):
+        try:
+            data = request.get_json()
+            follower_id = data.get('user_id')
+            
+            if not follower_id or follower_id == user_id:
+                return jsonify({'error': 'Invalid user IDs'}), 400
+            
+            user_to_follow = User.query.get_or_404(user_id)
+            follower = User.query.get_or_404(follower_id)
+            
+            if user_to_follow in follower.followed:
+                follower.followed.remove(user_to_follow)
+                following = False
+            else:
+                follower.followed.append(user_to_follow)
+                following = True
+            
+            db.session.commit()
+            
+            return jsonify({
+                'following': following,
+                'followers_count': user_to_follow.followers.count(),
+                'following_count': follower.followed.count()
+            })
+            
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'error': 'Failed to toggle follow'}), 500
+    
+    @app.route('/api/users/<user_id>/feed', methods=['GET'])
+    def get_user_feed(user_id):
+        try:
+            page = request.args.get('page', 1, type=int)
+            per_page = min(request.args.get('per_page', 20, type=int), 50)
+            
+            user = User.query.get_or_404(user_id)
+            
+            # Get posts from followed users and user's preferred categories
+            followed_user_ids = [u.id for u in user.followed]
+            followed_user_ids.append(user_id)  # Include user's own posts
+            
+            query = Post.query.filter(
+                Post.user_id.in_(followed_user_ids),
+                Post.is_hidden == False
+            )
+            
+            # Filter by preferred categories if set
+            if user.preferred_categories:
+                query = query.filter(
+                    Post.category.in_([PostCategory(cat) for cat in user.preferred_categories])
+                )
+            
+            posts = query.order_by(Post.created_at.desc()).paginate(
+                page=page, per_page=per_page, error_out=False
+            )
+            
+            return jsonify({
+                'posts': [post.to_dict(user_id=user_id) for post in posts.items],
+                'pagination': {
+                    'page': page,
+                    'pages': posts.pages,
+                    'per_page': per_page,
+                    'total': posts.total
+                }
+            })
+            
+        except Exception as e:
+            return jsonify({'error': 'Failed to fetch user feed'}), 500
     
     @app.route('/api/upload', methods=['POST'])
     @limiter.limit("5/minute")

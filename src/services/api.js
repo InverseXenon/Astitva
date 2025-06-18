@@ -33,6 +33,42 @@ class ApiService {
     }
   }
 
+  // GET request helper
+  async get(endpoint, options = {}) {
+    const { params, ...restOptions } = options;
+    let url = endpoint;
+    
+    if (params) {
+      const queryString = new URLSearchParams(params).toString();
+      url = queryString ? `${endpoint}?${queryString}` : endpoint;
+    }
+    
+    return this.request(url, { method: 'GET', ...restOptions });
+  }
+
+  // POST request helper
+  async post(endpoint, data, options = {}) {
+    return this.request(endpoint, {
+      method: 'POST',
+      body: JSON.stringify(data),
+      ...options,
+    });
+  }
+
+  // PUT request helper
+  async put(endpoint, data, options = {}) {
+    return this.request(endpoint, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+      ...options,
+    });
+  }
+
+  // DELETE request helper
+  async delete(endpoint, options = {}) {
+    return this.request(endpoint, { method: 'DELETE', ...options });
+  }
+
   // Health Check
   async healthCheck() {
     return this.request('/health');
@@ -67,6 +103,30 @@ class ApiService {
     });
   }
 
+  // Voting System
+  async votePost(postId, userId, voteType) {
+    return this.post(`/posts/${postId}/vote`, {
+      user_id: userId,
+      vote_type: voteType
+    });
+  }
+
+  async voteComment(commentId, userId, voteType) {
+    return this.post(`/comments/${commentId}/vote`, {
+      user_id: userId,
+      vote_type: voteType
+    });
+  }
+
+  // Awards
+  async awardPost(postId, userId, awardType, message = '') {
+    return this.post(`/posts/${postId}/award`, {
+      user_id: userId,
+      award_type: awardType,
+      message
+    });
+  }
+
   async getComments(postId) {
     return this.request(`/posts/${postId}/comments`);
   }
@@ -94,6 +154,32 @@ class ApiService {
       method: 'POST',
       headers: {}, // Remove Content-Type to let browser set it for FormData
       body: formData,
+    });
+  }
+
+  // User Management
+  async getUserProfile(userId, requestingUserId = null) {
+    const params = requestingUserId ? { requesting_user_id: requestingUserId } : {};
+    return this.get(`/users/${userId}`, { params });
+  }
+
+  async getUserPosts(userId, requestingUserId = null, page = 1) {
+    const params = { 
+      page,
+      requesting_user_id: requestingUserId 
+    };
+    return this.get(`/users/${userId}/posts`, { params });
+  }
+
+  async followUser(userId, followerId) {
+    return this.post(`/users/${userId}/follow`, {
+      user_id: followerId
+    });
+  }
+
+  async getUserFeed(userId, page = 1) {
+    return this.get(`/users/${userId}/feed`, { 
+      params: { page } 
     });
   }
 
