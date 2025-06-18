@@ -42,15 +42,35 @@ A comprehensive Flask-based backend for the Astitva women empowerment platform p
    ```
 
 4. **Environment Variables**
-   Create a `.env` file in the backend directory:
+   Create a `.env` file in the backend directory with the following variables:
    ```env
+   # Flask Configuration
    FLASK_ENV=development
-   SECRET_KEY=your-secret-key-here
-   GEMINI_API_KEY=your-gemini-api-key
+   FLASK_DEBUG=True
+   SECRET_KEY=your-secret-key-here-generate-a-random-string
+   
+   # Database Configuration
    DATABASE_URL=sqlite:///astitva.db
-   REDIS_URL=redis://localhost:6379/0
-   CORS_ORIGINS=http://localhost:3000,http://localhost:5173
+   
+   # Google Gemini AI Configuration (Required)
+   GEMINI_API_KEY=your-gemini-api-key-from-google-ai-studio
+   
+   # CORS Configuration (for development)
+   FRONTEND_URL=http://localhost:5173
+   
+   # Rate Limiting
+   RATELIMIT_STORAGE_URL=memory://
+   
+   # Security
+   SESSION_COOKIE_SECURE=False
+   SESSION_COOKIE_HTTPONLY=True
    ```
+   
+   **Getting your Gemini API Key:**
+   1. Go to [Google AI Studio](https://aistudio.google.com/)
+   2. Sign in with your Google account
+   3. Click "Get API Key" → "Create API Key"
+   4. Copy the key and paste it in your `.env` file
 
 5. **Database Setup**
    ```bash
