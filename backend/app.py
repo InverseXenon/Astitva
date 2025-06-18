@@ -687,6 +687,61 @@ def create_app(config_name=None):
         except Exception as e:
             return jsonify({'error': 'Failed to fetch user feed'}), 500
     
+    @app.route('/api/users/sync', methods=['POST'])
+    @limiter.limit("10/minute")
+    def sync_user():
+        try:
+            data = request.get_json()
+            
+            # Validate required fields
+            required_fields = ['clerk_id', 'username', 'email', 'first_name', 'last_name']
+            for field in required_fields:
+                if not data.get(field):
+                    return jsonify({'error': f'{field} is required'}), 400
+            
+            # Check if user already exists
+            existing_user = User.query.filter_by(clerk_id=data['clerk_id']).first()
+            
+            if existing_user:
+                # Update existing user
+                existing_user.username = data['username']
+                existing_user.email = data['email']
+                existing_user.first_name = data['first_name']
+                existing_user.last_name = data['last_name']
+                existing_user.display_name = data.get('display_name')
+                existing_user.last_seen = datetime.now(timezone.utc)
+                
+                db.session.commit()
+                
+                return jsonify({
+                    'message': 'User updated successfully',
+                    'user': existing_user.to_dict(),
+                    'created': False
+                })
+            else:
+                # Create new user
+                new_user = User(
+                    clerk_id=data['clerk_id'],
+                    username=data['username'],
+                    email=data['email'],
+                    first_name=data['first_name'],
+                    last_name=data['last_name'],
+                    display_name=data.get('display_name')
+                )
+                
+                db.session.add(new_user)
+                db.session.commit()
+                
+                return jsonify({
+                    'message': 'User created successfully',
+                    'user': new_user.to_dict(),
+                    'created': True
+                }), 201
+                
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'error': 'Failed to sync user'}), 500
+    
     @app.route('/api/upload', methods=['POST'])
     @limiter.limit("5/minute")
     def upload_file():

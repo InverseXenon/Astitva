@@ -90,10 +90,7 @@ class ApiService {
   }
 
   async createPost(postData) {
-    return this.request('/posts', {
-      method: 'POST',
-      body: JSON.stringify(postData),
-    });
+    return this.post('/posts', postData);
   }
 
   async likePost(postId, userId) {

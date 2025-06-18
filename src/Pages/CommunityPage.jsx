@@ -67,6 +67,7 @@ const CommunityPage = () => {
   const [userStats, setUserStats] = useState({});
   const [followingUsers, setFollowingUsers] = useState(new Set());
   const [expandedPosts, setExpandedPosts] = useState(new Set());
+  const [backendUser, setBackendUser] = useState(null);
 
   const categories = [
     'all', 'Career', 'Health', 'Safety', 'Legal', 'Finance', 
@@ -91,9 +92,32 @@ const CommunityPage = () => {
   useEffect(() => {
     fetchPosts();
     if (user) {
+      syncUser();
       fetchUserStats();
     }
   }, [sortBy, selectedCategory, activeTab, user]);
+
+  const syncUser = async () => {
+    if (!user) return;
+    
+    try {
+      // Try to sync/create user in backend
+      const userData = {
+        clerk_id: user.id,
+        username: user.username || user.emailAddresses?.[0]?.emailAddress?.split('@')[0] || 'user',
+        email: user.emailAddresses?.[0]?.emailAddress || '',
+        first_name: user.firstName || '',
+        last_name: user.lastName || '',
+        display_name: user.fullName || user.firstName || user.username
+      };
+
+      const response = await apiService.post('/users/sync', userData);
+      setBackendUser(response.user);
+      console.log('User synced successfully:', response.user);
+    } catch (error) {
+      console.error('Error syncing user:', error);
+    }
+  };
 
   const fetchPosts = async () => {
     setLoading(true);
@@ -105,13 +129,13 @@ const CommunityPage = () => {
         user_id: user?.id
       };
 
-      let endpoint = '/api/posts';
+      let endpoint = '/posts';
       if (activeTab === 'following') {
-        endpoint = `/api/users/${user?.id}/feed`;
+        endpoint = `/users/${user?.id}/feed`;
       }
 
       const response = await apiService.get(endpoint, { params });
-      setPosts(response.data.posts || []);
+      setPosts(response.posts || []);
     } catch (error) {
       console.error('Error fetching posts:', error);
     } finally {
@@ -121,8 +145,8 @@ const CommunityPage = () => {
 
   const fetchUserStats = async () => {
     try {
-      const response = await apiService.get(`/api/users/${user.id}`);
-      setUserStats(response.data.user);
+      const response = await apiService.get(`/users/${user.id}`);
+      setUserStats(response.user);
     } catch (error) {
       console.error('Error fetching user stats:', error);
     }
@@ -132,7 +156,7 @@ const CommunityPage = () => {
     if (!user) return;
     
     try {
-      const response = await apiService.post(`/api/posts/${postId}/vote`, {
+      const response = await apiService.post(`/posts/${postId}/vote`, {
         user_id: user.id,
         vote_type: voteType
       });
@@ -141,10 +165,10 @@ const CommunityPage = () => {
         post.id === postId 
           ? { 
               ...post, 
-              upvotes: response.data.upvotes,
-              downvotes: response.data.downvotes,
-              score: response.data.score,
-              user_vote: response.data.user_vote
+              upvotes: response.upvotes,
+              downvotes: response.downvotes,
+              score: response.score,
+              user_vote: response.user_vote
             }
           : post
       ));
@@ -157,7 +181,7 @@ const CommunityPage = () => {
     if (!user) return;
     
     try {
-      const response = await apiService.post(`/api/comments/${commentId}/vote`, {
+      const response = await apiService.post(`/comments/${commentId}/vote`, {
         user_id: user.id,
         vote_type: voteType
       });
@@ -169,10 +193,10 @@ const CommunityPage = () => {
           comment.id === commentId 
             ? { 
                 ...comment, 
-                upvotes: response.data.upvotes,
-                downvotes: response.data.downvotes,
-                score: response.data.score,
-                user_vote: response.data.user_vote
+                upvotes: response.upvotes,
+                downvotes: response.downvotes,
+                score: response.score,
+                user_vote: response.user_vote
               }
             : comment
         )
@@ -186,10 +210,10 @@ const CommunityPage = () => {
     if (!user) return;
     
     try {
-      await apiService.post(`/api/posts/${postId}/award`, {
+      await apiService.post(`/posts/${postId}/award`, {
         user_id: user.id,
         award_type: awardType,
-        message: `Awarded ${awardType} by ${user.username}`
+        message: `Awarded ${awardType} by ${user.firstName || 'Anonymous'}`
       });
 
       setPosts(posts.map(post => 
@@ -213,11 +237,11 @@ const CommunityPage = () => {
     if (!user) return;
     
     try {
-      const response = await apiService.post(`/api/users/${userId}/follow`, {
+      const response = await apiService.post(`/users/${userId}/follow`, {
         user_id: user.id
       });
 
-      if (response.data.following) {
+      if (response.following) {
         setFollowingUsers(prev => new Set([...prev, userId]));
       } else {
         setFollowingUsers(prev => {
@@ -232,19 +256,29 @@ const CommunityPage = () => {
   };
 
   const handleCreatePost = async () => {
-    if (!user || !newPost.title.trim() || !newPost.content.trim()) return;
+    if (!user || !newPost.title.trim() || !newPost.content.trim()) {
+      console.log('Validation failed:', { user, title: newPost.title, content: newPost.content });
+      return;
+    }
 
     try {
-      const response = await apiService.post('/api/posts', {
+      console.log('Creating post with data:', {
         ...newPost,
         user_id: user.id
       });
 
-      setPosts([response.data.post, ...posts]);
+      const response = await apiService.post('/posts', {
+        ...newPost,
+        user_id: backendUser?.id || user.id
+      });
+
+      console.log('Post created successfully:', response);
+      setPosts([response.post, ...posts]);
       setNewPost({ title: '', content: '', category: 'Career', anonymous: false, link: '', type: 'text' });
       setShowCreatePost(false);
     } catch (error) {
       console.error('Error creating post:', error);
+      alert('Failed to create post. Please try again.');
     }
   };
 
@@ -252,7 +286,7 @@ const CommunityPage = () => {
     if (!user || !newComment[postId]?.trim()) return;
 
     try {
-      const response = await apiService.post(`/api/posts/${postId}/comments`, {
+      const response = await apiService.post(`/posts/${postId}/comments`, {
         content: newComment[postId],
         user_id: user.id
       });
@@ -262,7 +296,7 @@ const CommunityPage = () => {
           ? { 
               ...post, 
               comments_count: post.comments_count + 1,
-              comments: [...(post.comments || []), response.data.comment]
+              comments: [...(post.comments || []), response.comment]
             }
           : post
       ));
@@ -275,13 +309,13 @@ const CommunityPage = () => {
 
   const loadComments = async (postId) => {
     try {
-      const response = await apiService.get(`/api/posts/${postId}/comments`, {
+      const response = await apiService.get(`/posts/${postId}/comments`, {
         params: { user_id: user?.id }
       });
       
       setPosts(posts.map(post => 
         post.id === postId 
-          ? { ...post, comments: response.data.comments }
+          ? { ...post, comments: response.comments }
           : post
       ));
     } catch (error) {
