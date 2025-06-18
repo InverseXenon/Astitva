@@ -4,10 +4,75 @@
     <meta charset="UTF-8" />
     <link rel="icon" href="/logo.jpg" type="image/jpg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Astitva</title>
+    <meta name="description" content="Astitva - Empowering women through community support, career opportunities, health tracking, and financial independence. Join 50,000+ women in their journey to empowerment." />
+    <meta name="keywords" content="women empowerment, job opportunities, health tracking, financial independence, community support, education, career growth" />
+    <meta name="author" content="Astitva" />
+    <meta property="og:title" content="Astitva - Empower • Elevate • Evolve" />
+    <meta property="og:description" content="Join a thriving community of women achieving financial independence, career growth, and personal wellness through AI-powered resources and peer support." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <title>Astitva - Empower • Elevate • Evolve</title>
+    <style>
+      /* Prevent FOUC (Flash of Unstyled Content) */
+      html { 
+        font-family: 'Inter', system-ui, sans-serif; 
+        scroll-behavior: smooth;
+      }
+      #root { min-height: 100vh; }
+      .loading-screen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        transition: opacity 0.5s ease-out;
+      }
+      .loading-logo {
+        width: 80px;
+        height: 80px;
+        background: white;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: pulse 2s infinite;
+      }
+      @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+      }
+    </style>
   </head>
   <body>
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="loading-screen">
+      <div class="loading-logo">
+        <span style="font-size: 32px; color: #667eea; font-weight: bold;">A</span>
+      </div>
+    </div>
+    
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+    
+    <script>
+      // Hide loading screen once app is loaded
+      window.addEventListener('load', () => {
+        const loadingScreen = document.getElementById('loading-screen');
+        if (loadingScreen) {
+          loadingScreen.style.opacity = '0';
+          setTimeout(() => {
+            loadingScreen.style.display = 'none';
+          }, 500);
+        }
+      });
+    </script>
   </body>
 </html>

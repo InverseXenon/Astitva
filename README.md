@@ -1,111 +1,216 @@
-# Astitva - Empower • Elevate • Evolve
+# Astitva - Women's Empowerment Platform
 
+A comprehensive platform designed to empower women through AI-powered assistance, community support, job opportunities, health tracking, and resource finding.
 
+## ✨ Features
 
-## 🌟 Overview
+- **🤖 AI Chat Assistant (Sakhi)** - Powered by Google Gemini AI for women-specific guidance
+- **👥 Community Platform** - Share experiences, ask questions, and connect with other women
+- **💼 Job Board** - Find and apply for job opportunities
+- **🏥 Health & Wellness Tracking** - Monitor your physical and mental well-being
+- **📚 Educational Resources** - Access courses, workshops, and learning materials
+- **🗺️ Resource Finder** - Locate nearby healthcare, legal aid, and support services
+- **📊 Personal Dashboard** - Track your progress and activities
 
-Astitva is a comprehensive digital platform designed to empower women by integrating community support, financial independence, health tracking, safety features, and resource accessibility. Our mission is to address systemic inequalities and create a stronger, safer, and self-reliant community for women worldwide.
+## 🚀 Quick Start
 
-## 🎯 SDGs Addressed
+### Prerequisites
 
-- Goal 5: Gender Equality 
-- Goal 3: Good Health and Well-Being
-- Goal 8: Decent Work and Economic Growth
-- Goal 10: Reduced Inequalities
+- Node.js (v16 or higher)
+- Python (v3.8 or higher)
+- Your own Google Gemini AI API key
 
-## 🔑 Key Features
+### Setup Instructions
 
-### 👭 Community & Support
-- Safe discussion forums on health, legal rights, and career growth
-- Anonymous participation options for privacy
-- Mentorship connections
+1. **Clone the repository**
+   ```bash
+   git clone <your-repo-url>
+   cd Astitva
+   ```
 
-### 💼 Employment & Financial Growth
-- Marketplace for freelance gigs and job listings
-- AI-driven job matching based on skills and goals
-- Financial literacy resources and tailored investment guidance
+2. **Get your Gemini API Key**
+   - Go to [Google AI Studio](https://makersuite.google.com/app/apikey)
+   - Create a new API key
+   - Copy the API key for the next step
 
-### ❤️ Health & Well-being
-- Menstrual health tracking with personalized insights
-- Self-defense resources and tutorials
-- Mental health support and resources
-- Accessibility for all tech skill levels
+3. **Create environment file**
+   Create a `.env` file in the `backend` directory:
+   ```env
+   GEMINI_API_KEY=your-gemini-api-key
+   FLASK_ENV=development
+   SECRET_KEY=your-secret-key-here
+   DATABASE_URL=sqlite:///astitva.db
+   CORS_ORIGINS=http://localhost:3000,http://localhost:5173
+   ```
 
-### 🛡️ Safety & Legal Assistance
-- Anonymous incident reporting
-- Emergency alerts and safety check-ins
-- Legal aid resources and guidance
-- Encrypted communication channels
-- Real-time helpline directory
+4. **Build and setup the application**
+   ```bash
+   python build.py
+   ```
 
-### 🔎 Resource Finder 
-- Interactive mapping for shelters, healthcare centers, and supplies
-- Geolocation-based search functionality
-- Support for emergency needs and gender-equality projects
+5. **Start the application**
+   ```bash
+   cd backend
+   python app.py
+   ```
 
-## 💪 Unique Selling Proposition (USP)
+6. **Access the application**
+   Open your browser and go to: `http://localhost:5000`
 
-1. **All-in-One Platform**: Combines safety, employment, and health tracking in a single ecosystem
-2. **AI-Powered Chatbot**: Provides instant responses for legal, health, and career queries
-3. **Secure & Private**: Encrypted reporting and secure communication ensure user safety
+## 🛠️ Development Setup
 
-## 🔧 Technologies Used
+If you want to run frontend and backend separately for development:
 
-- Frontend: React.js, Redux, Material UI
-- Backend: Flask
-- AI/ML: Gemini API, NLP for chatbot
-- Authentication: Clerk
-- Geolocation: Google Maps API
-- Payment Processing: Stripe API
-- Hosting: AWS
-
-## 📱 Installation and Setup
-
+### Frontend Development
 ```bash
-# Clone the repository
-git clone https://github.com/yourusername/astitva.git
-
-# Change directory
-cd astitva
-
-# Install dependencies
 npm install
-
-# Set up environment variables
-cp .env.example .env
-
-# Start the development server
 npm run dev
 ```
+This will start the frontend at `http://localhost:5173`
 
-## 🚀 Demo
+### Backend Development
+```bash
+cd backend
+pip install -r requirements.txt
+python app.py
+```
+This will start the backend at `http://localhost:5000`
 
-- [Live Demo](https://youtu.be/nU2KaEqz4AY)
+## 📁 Project Structure
 
-## 📊 Project Status
+```
+Astitva/
+├── src/                    # Frontend React application
+│   ├── components/         # Reusable UI components
+│   ├── Pages/             # Main application pages
+│   └── services/          # API service layer
+├── backend/               # Flask backend application
+│   ├── app.py            # Main application file
+│   ├── models.py         # Database models
+│   ├── config.py         # Configuration settings
+│   └── requirements.txt  # Python dependencies
+├── public/               # Static assets
+├── build.py             # Build script
+└── README.md           # This file
+```
 
-This project was developed during the Syrus Hackathon by Team "$ git commit -m "issues"". We are currently seeking contributors and partners to help expand the platform's reach and impact.
+## 🔧 Configuration
+
+### Environment Variables
+
+Create a `.env` file in the `backend` directory with the following variables:
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `GEMINI_API_KEY` | Yes | Your Google Gemini AI API key |
+| `SECRET_KEY` | Yes | Flask secret key for sessions |
+| `DATABASE_URL` | No | Database connection string (defaults to SQLite) |
+| `FLASK_ENV` | No | Environment mode (development/production) |
+| `CORS_ORIGINS` | No | Allowed origins for CORS |
+
+### Database
+
+The application uses SQLite by default for development. For production, you can use PostgreSQL by setting the `DATABASE_URL` environment variable:
+
+```env
+DATABASE_URL=postgresql://username:password@localhost/astitva
+```
+
+## 🎯 Key Features Explained
+
+### AI Chat Assistant (Sakhi)
+- Powered by Google Gemini AI
+- Specialized for women's empowerment topics
+- Covers judiciary rights, health, safety, career guidance, and more
+- Maintains conversation context
+
+### Community Platform
+- Create and share posts anonymously or with your identity
+- Categorized discussions (Career, Health, Safety, Legal, Finance, Mental Health)
+- Like, comment, and save posts
+- Real-time interaction with other community members
+
+### Job Board
+- Browse job opportunities
+- Filter by location, job type, and keywords
+- Save jobs for later application
+- Direct application links
+
+### Health & Wellness
+- Track menstrual cycles and symptoms
+- Monitor mental health indicators
+- Set medication reminders
+- Health analytics and insights
+
+## 🔐 Security & Privacy
+
+- User authentication via Clerk
+- Anonymous posting options
+- Secure API endpoints with rate limiting
+- Data encryption in transit
+- Privacy-focused design
+
+## 🚀 Deployment
+
+### Production Deployment
+
+1. **Build the frontend**
+   ```bash
+   npm run build
+   ```
+
+2. **Set production environment variables**
+   ```env
+   FLASK_ENV=production
+   SECRET_KEY=your-secure-production-secret
+   GEMINI_API_KEY=your-gemini-api-key
+   DATABASE_URL=your-production-database-url
+   ```
+
+3. **Deploy to your preferred platform**
+   - The application serves both frontend and backend from the same Flask server
+   - Ensure your deployment platform supports Python and serves static files
+
+### Recommended Platforms
+- **Heroku** - Easy deployment with Heroku CLI
+- **Railway** - Simple Git-based deployment
+- **DigitalOcean App Platform** - Scalable and reliable
+- **AWS/GCP/Azure** - For enterprise deployments
 
 ## 🤝 Contributing
 
-We welcome contributions from developers, designers, and domain experts. Please read our [Contributing Guidelines](CONTRIBUTING.md) before submitting a pull request.
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
 
-```bash
-# Create a new branch
-git checkout -b feature/your-feature-name
+## 📝 API Documentation
 
-# Commit your changes
-git commit -m "Add feature: description"
+### Main Endpoints
 
-# Push to your branch
-git push origin feature/your-feature-name
-```
+- `GET /api/health` - Health check
+- `POST /api/chat` - AI chat interaction
+- `GET /api/posts` - Get community posts
+- `POST /api/posts` - Create a new post
+- `POST /api/posts/:id/like` - Like a post
+- `GET /api/jobs` - Get job listings
+- `POST /api/upload` - Upload files
+- `GET /api/stats` - Platform statistics
 
+## 🆘 Support
 
+If you encounter any issues:
 
+1. Check that your Gemini API key is correctly set
+2. Ensure all dependencies are installed
+3. Check the browser console for frontend errors
+4. Check the backend logs for API errors
 
-## 🙏 Acknowledgements
+## 📄 License
 
-- Syrus Hackathon for the opportunity
-- Our mentors and advisors
-- All the women who provided valuable insights during our research phase
+This project is proprietary software. All rights reserved.
+
+---
+
+**Built with ❤️ for women's empowerment**

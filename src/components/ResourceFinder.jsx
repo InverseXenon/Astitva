@@ -29,7 +29,7 @@ const ResourceFinder = () => {
   const [filters, setFilters] = useState({ type: 'All' });
   const [liveData, setLiveData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
-  const [position, setPosition] = useState(null);
+  const [_position, setPosition] = useState(null);
 
   // Maximum number of list items to display
   const MAX_ITEMS = 3;

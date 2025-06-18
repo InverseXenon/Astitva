@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import apiService from "../services/api";
 import { Sparkles, Heart, Send, X } from "lucide-react";
 
 const FloatingChat = () => {
@@ -7,8 +7,28 @@ const FloatingChat = () => {
   const [query, setQuery] = useState("");
   const [chatHistory, setChatHistory] = useState([]);
   const [isBotTyping, setIsBotTyping] = useState(false);
+  const [hasWelcomed, setHasWelcomed] = useState(false);
+  const [isClicked, setIsClicked] = useState(false);
 
-  const toggleChat = () => setIsOpen(!isOpen);
+  const toggleChat = () => {
+    // Add click animation
+    setIsClicked(true);
+    setTimeout(() => setIsClicked(false), 200);
+    
+    setIsOpen(!isOpen);
+    
+    // Add welcome message on first open
+    if (!isOpen && !hasWelcomed) {
+      setTimeout(() => {
+        setChatHistory([{
+          sender: "bot",
+          text: "🌸 Namaste! I'm Sakhi, your empowerment companion. I'm here to help you with career guidance, health questions, legal rights, safety tips, and more. How can I support you today?",
+          id: Date.now()
+        }]);
+        setHasWelcomed(true);
+      }, 500);
+    }
+  };
 
   const handleSend = async () => {
     if (!query.trim()) return;
@@ -21,13 +41,13 @@ const FloatingChat = () => {
 
     try {
       setIsBotTyping(true);
-      const res = await axios.post("http://localhost:5000/api/chat", { query: tempQuery });
+      const res = await apiService.sendChatMessage(tempQuery);
 
       // Simulate typing delay
       setTimeout(() => {
         setChatHistory(prev => [...prev, {
           sender: "bot",
-          text: res.data.response,
+          text: res.response,
           id: Date.now() + 1
         }]);
         setIsBotTyping(false);
@@ -51,24 +71,26 @@ const FloatingChat = () => {
   }, [chatHistory, isBotTyping]);
 
   return (
-    <div className="fixed bottom-6 right-6 z-[999]">
+    <div className="fixed bottom-4 right-4 z-[999] md:bottom-6 md:right-6">
       {/* Floating Action Button */}
       <button
         onClick={toggleChat}
-        className={`relative bg-gradient-to-br from-fuchsia-600 to-pink-500 w-14 h-14 rounded-2xl 
+        className={`relative bg-gradient-to-br from-fuchsia-600 to-pink-500 w-12 h-12 md:w-14 md:h-14 rounded-2xl 
         shadow-lg flex items-center justify-center transition-all duration-300 hover:scale-105
-        ${isOpen ? "rotate-90 shadow-pink-900/30" : "rotate-0 shadow-pink-900/20"}`}
+        ${isOpen ? "rotate-90 shadow-pink-900/30" : "rotate-0 shadow-pink-900/20"}
+        ${isClicked ? "scale-90 animate-pulse" : ""}`}
       >
-        <Sparkles className="text-white w-6 h-6" />
-        <div className="absolute -top-1 -right-1 bg-rose-500 text-white w-5 h-5 rounded-full 
+        <Sparkles className="text-white w-5 h-5 md:w-6 md:h-6" />
+        <div className="absolute -top-1 -right-1 bg-rose-500 text-white w-4 h-4 md:w-5 md:h-5 rounded-full 
                      flex items-center justify-center text-[10px] animate-pulse">
-          <Heart className="w-2.5 h-2.5" />
+          <Heart className="w-2 h-2 md:w-2.5 md:h-2.5" />
         </div>
       </button>
 
       {/* Chat Interface */}
-      <div className={`absolute bottom-20 right-0 w-80 h-[480px] transition-all duration-300 
-        ${isOpen ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8 pointer-events-none"}`}>
+      <div className={`absolute bottom-16 right-0 w-72 h-[420px] md:w-80 md:h-[480px] md:bottom-20 
+        transition-all duration-300 ${isOpen ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8 pointer-events-none"}
+        ${isOpen ? "max-h-[calc(100vh-120px)]" : ""}`}>
         
         <div className="h-full bg-white/95 backdrop-blur-lg rounded-2xl shadow-xl border border-white/20 overflow-hidden">
           {/* Header */}
@@ -93,7 +115,7 @@ const FloatingChat = () => {
           {/* Chat Messages */}
           <div 
             id="chat-body"
-            className="h-[calc(100%-136px)] p-3 space-y-3 overflow-y-auto 
+            className="h-[calc(100%-120px)] md:h-[calc(100%-136px)] p-2 md:p-3 space-y-2 md:space-y-3 overflow-y-auto 
                      scrollbar-thin scrollbar-thumb-pink-200 scrollbar-track-transparent"
           >
             {chatHistory.map((msg) => (
